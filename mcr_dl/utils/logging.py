@@ -73,7 +73,7 @@ def print_configuration(args, name):
 
 
 def log_dist(message, ranks=None, level=logging.INFO):
-    from deepspeed import comm as dist
+    import mcr_dl as dist
     """Log message when one of following condition meets
 
     + not dist.is_initialized()
@@ -97,7 +97,7 @@ def log_dist(message, ranks=None, level=logging.INFO):
 
 
 def print_json_dist(message, ranks=None, path=None):
-    from deepspeed import comm as dist
+    import mcr_dl as dist
     """Print message when one of following condition meets
 
     + not dist.is_initialized()

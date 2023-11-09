@@ -5,7 +5,7 @@
 
 import os
 import inspect
-from mcr_dl.utils import get_caller_func
+from mcr_dl.utils_2 import get_caller_func
 
 
 def get_local_rank_from_launcher():

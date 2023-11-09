@@ -67,7 +67,7 @@ def calc_bw_log(comm_op, size, duration):
 class CommsLogger:
 
     def __init__(self):
-        from mcr_dl.comm.constants import COMMS_LOGGER_VERBOSE_DEFAULT, COMMS_LOGGER_DEBUG_DEFAULT, COMMS_LOGGER_PROF_OPS_DEFAULT, COMMS_LOGGER_PROF_ALL_DEFAULT, COMMS_LOGGER_ENABLED_DEFAULT
+        from mcr_dl.constants import COMMS_LOGGER_VERBOSE_DEFAULT, COMMS_LOGGER_DEBUG_DEFAULT, COMMS_LOGGER_PROF_OPS_DEFAULT, COMMS_LOGGER_PROF_ALL_DEFAULT, COMMS_LOGGER_ENABLED_DEFAULT
         self.comms_dict = {}
         self.verbose = COMMS_LOGGER_VERBOSE_DEFAULT
         self.debug = COMMS_LOGGER_DEBUG_DEFAULT

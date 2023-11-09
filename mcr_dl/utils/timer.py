@@ -5,8 +5,8 @@
 
 import time
 from numpy import mean
-from mcr_dl.utils.logging import log_dist
-from mcr_dl.accelerator import get_accelerator
+from mcr_dl.utils_2.logging import log_dist
+from mcr_dl.cuda_accelerator import get_accelerator
 
 FORWARD_MICRO_TIMER = 'fwd_microstep'
 FORWARD_GLOBAL_TIMER = 'fwd'

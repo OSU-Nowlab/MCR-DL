@@ -7,7 +7,7 @@ Copyright 2021 The Microsoft DeepSpeed Team
 '''
 
 import torch
-from mcr_dl.accelerator import get_accelerator
+from .cuda_accelerator import get_accelerator # TBD: Note CUDA Accelerator
 from .reduce_op import ReduceOp
 from .torch import TorchBackend
 

@@ -4,7 +4,7 @@
 # DeepSpeed Team
 
 from .constants import *
-from ..pydantic_v1 import BaseModel
+from .pydantic_v1 import BaseModel
 
 
 class CommsConfig(BaseModel):

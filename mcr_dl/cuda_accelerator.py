@@ -7,7 +7,6 @@ import os
 import pkgutil
 import importlib
 
-from .abstract_accelerator import DeepSpeedAccelerator
 # During setup stage torch may not be installed, pass on no torch will
 # allow op builder related API to be executed.
 try:
@@ -19,7 +18,7 @@ except ImportError:
 pynvml = None
 
 
-class CUDA_Accelerator(DeepSpeedAccelerator):
+class CUDA_Accelerator():
 
     def __init__(self):
         self._name = 'cuda'
@@ -91,3 +90,13 @@ class CUDA_Accelerator(DeepSpeedAccelerator):
             return self.class_dict[class_name]()
         else:
             return None
+
+ds_accelerator = None
+
+def get_accelerator():
+    global ds_accelerator
+    if ds_accelerator is not None:
+        return ds_accelerator
+
+    ds_accelerator = CUDA_Accelerator()
+
