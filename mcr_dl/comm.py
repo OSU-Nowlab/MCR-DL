@@ -37,7 +37,7 @@ from torch import TorchBackend
 from mcr_dl import utils
 from datetime import timedelta
 
-# Current deepspeed.comm backend (cdb) global object for simple access by client code
+# Current mcr-dl backend (cdb) global object for simple access by client code
 cdb = None
 
 # Create global timer for ops
@@ -70,7 +70,7 @@ def _configure_using_config_file(config):
 
 
 def configure(
-    deepspeed_config=None,
+    mcr_dl_config=None,
     enabled=None,
     prof_all=None,
     prof_ops=None,
@@ -78,8 +78,8 @@ def configure(
     debug=None,
 ):
 
-    if deepspeed_config is not None:
-        _configure_using_config_file(deepspeed_config.comms_config)
+    if mcr_dl_config is not None:
+        _configure_using_config_file(mcr_dl_config.comms_config)
 
     if enabled is not None:
         comms_logger.enabled = enabled
@@ -135,12 +135,12 @@ def timed_op(func):
 
 
 # For compatibility with torch distributed's init_process_group, we shall retain the signature from PyTorch code.
-# DeepSpeed NCCL/MPI backend may not need all these params as we will have our own implementation.
+# MCR-DL NCCL/MPI backend may not need all these params as we will have our own implementation.
 # Please read full torch.distributed API docs from https://pytorch.org/docs/stable/distributed.html
 
 
 # UNUSED: Future helper function to initialize DS backends
-def init_deepspeed_backend(ds_backend, timeout, init_method):
+def init_mcr_dl_backend(ds_backend, timeout, init_method):
     global cdb
     global nccl_backend
     global mpi_backend
@@ -151,22 +151,22 @@ def init_deepspeed_backend(ds_backend, timeout, init_method):
     size = int(os.getenv('WORLD_SIZE', '-1'))
 
     if ds_backend == NCCL_BACKEND:
-        utils.logger.debug("NCCL backend in DeepSpeed not yet implemented")
+        utils.logger.debug("NCCL backend in MCR-DL not yet implemented")
     elif ds_backend == MPI_BACKEND:
-        utils.logger.debug("MPI backend in DeepSpeed not yet implemented")
+        utils.logger.debug("MPI backend in MCR-DL not yet implemented")
     elif ds_backend == GLOO_BACKEND:
-        utils.logger.debug("Gloo backend in DeepSpeed not yet implemented")
+        utils.logger.debug("Gloo backend in MCR-DL not yet implemented")
     elif ds_backend == CCL_BACKEND:
         ccl_backend = CCLBackend(rank=rank, world_size=size, timeout=timeout, init_method=init_method)
         utils.logger.info(f"Initialize {ds_backend} backend")
     elif ds_backend == HCCL_BACKEND:
-        utils.logger.warn("HCCL backend in DeepSpeed not yet implemented")
+        utils.logger.warn("HCCL backend in MCR-DL not yet implemented")
     else:
-        utils.logger.debug(f"DeepSpeed does not support {ds_backend} backend")
+        utils.logger.debug(f"MCR-DL does not support {ds_backend} backend")
 
 
 def is_initialized():
-    #assert cdb is not None, 'DeepSpeed backend not set, please initialize it using init_process_group()'
+    #assert cdb is not None, 'MCR-DL backend not set, please initialize it using init_process_group()'
     if cdb is None:
         return False
     else:
@@ -181,17 +181,17 @@ def destroy_process_group(group=None):
 def new_group(ranks):
     global cdb
     assert cdb is not None and cdb.is_initialized(
-    ), 'DeepSpeed backend not set, please initialize it using init_process_group()'
+    ), 'MCR-DL backend not set, please initialize it using init_process_group()'
     return cdb.new_group(ranks)
 
 
 def is_available() -> bool:
 
-    # Returns ``True`` if the deepspeed comm package is available.
+    # Returns ``True`` if the mcr-dl comm package is available.
 
-    # TODO: load other ops. Clients including deepspeed itself should use deepspeed.comm to import
+    # TODO: load other ops. Clients including mcr-dl itself should use mcr-dl to import
     # any communication related primitives from this package.
-    # use hasattr(deepspeed.csrc.ops, "_comm") or something
+    # use hasattr(mcr-dl.csrc.ops, "_comm") or something
     return True
 
 
@@ -239,7 +239,7 @@ def all_gather(tensor_list,
 def has_reduce_scatter_tensor():
     global cdb
     assert cdb is not None and cdb.is_initialized(
-    ), 'DeepSpeed backend not set, please initialize it using init_process_group()'
+    ), 'MCR-DL backend not set, please initialize it using init_process_group()'
     return cdb.has_reduce_scatter_tensor()
 
 
@@ -252,7 +252,7 @@ def reduce_scatter_fn(output_tensor,
                       debug=get_caller_func()):
     global cdb
     assert cdb is not None and cdb.is_initialized(
-    ), 'DeepSpeed backend not set, please initialize it using init_process_group()'
+    ), 'MCR-DL backend not set, please initialize it using init_process_group()'
     if cdb.has_reduce_scatter_tensor():
         return reduce_scatter_tensor(output_tensor,
                                      tensor,
@@ -308,14 +308,14 @@ def all_gather_into_tensor(output_tensor,
 def has_all_gather_into_tensor():
     global cdb
     assert cdb is not None and cdb.is_initialized(
-    ), 'DeepSpeed backend not set, please initialize it using init_process_group()'
+    ), 'MCR-DL backend not set, please initialize it using init_process_group()'
     return cdb.has_all_gather_into_tensor()
 
 
 def allgather_fn(output_tensor, input_tensor, group=None, async_op=False, debug=get_caller_func()):
     global cdb
     assert cdb is not None and cdb.is_initialized(
-    ), 'DeepSpeed backend not set, please initialize it using init_process_group()'
+    ), 'MCR-DL backend not set, please initialize it using init_process_group()'
     if cdb.has_all_gather_into_tensor():
         return all_gather_into_tensor(output_tensor, input_tensor, group=group, async_op=async_op, debug=debug)
     else:
@@ -459,7 +459,7 @@ def has_all_reduce_coalesced():
     """"""
     global cdb
     assert cdb is not None and cdb.is_initialized(
-    ), 'DeepSpeed backend not set, please initialize it using init_process_group()'
+    ), 'MCR-DL backend not set, please initialize it using init_process_group()'
     assert cdb.has_all_reduce_coalesced is not None, 'has_all_reduce_coalesced is not yet defined'
     return cdb.has_all_reduce_coalesced
 
@@ -467,7 +467,7 @@ def has_all_reduce_coalesced():
 def has_coalescing_manager():
     global cdb
     assert cdb is not None and cdb.is_initialized(
-    ), 'DeepSpeed backend not set, please initialize it using init_process_group()'
+    ), 'MCR-DL backend not set, please initialize it using init_process_group()'
     assert cdb.has_coalescing_manager is not None, 'has_coalescing_manager is not yet defined'
     return cdb.has_coalescing_manager
 
@@ -475,7 +475,7 @@ def has_coalescing_manager():
 def all_gather_coalesced(output_tensors, input_tensors, group=None, async_op=False):
     global cdb
     assert cdb is not None and cdb.is_initialized(
-    ), 'DeepSpeed backend not set, please initialize it using init_process_group()'
+    ), 'MCR-DL backend not set, please initialize it using init_process_group()'
     return cdb.all_gather_coalesced(output_tensors, input_tensors, group=group, async_op=async_op)
 
 
@@ -523,7 +523,7 @@ def all_reduce_coalesced(tensors,
 def get_world_group():
     global cdb
     assert cdb is not None and cdb.is_initialized(
-    ), 'DeepSpeed backend not set, please initialize it using init_process_group()'
+    ), 'MCR-DL backend not set, please initialize it using init_process_group()'
     return cdb.get_world_group()
 
 
@@ -540,7 +540,7 @@ def get_world_size(group=None) -> int:
     global cdb
 
     assert cdb is not None and cdb.is_initialized(
-    ), 'DeepSpeed backend not set, please initialize it using init_process_group()'
+    ), 'MCR-DL backend not set, please initialize it using init_process_group()'
     return cdb.get_world_size(group)
 
 
@@ -560,7 +560,7 @@ def get_rank(group=None):
     """
     global cdb
     assert cdb is not None and cdb.is_initialized(
-    ), 'DeepSpeed backend not set, please initialize it using init_process_group()'
+    ), 'MCR-DL backend not set, please initialize it using init_process_group()'
     return cdb.get_rank(group)
 
 
@@ -574,21 +574,21 @@ def get_local_rank():
     """
     global cdb
     assert cdb is not None and cdb.is_initialized(
-    ), 'DeepSpeed backend not set, please initialize it using init_process_group()'
+    ), 'MCR-DL backend not set, please initialize it using init_process_group()'
     return get_local_rank_from_launcher()
 
 
 def get_global_rank(group=None, group_rank=0):
     global cdb
     assert cdb is not None and cdb.is_initialized(
-    ), 'DeepSpeed backend not set, please initialize it using init_process_group()'
+    ), 'MCR-DL backend not set, please initialize it using init_process_group()'
     return cdb.get_global_rank(group, group_rank)
 
 
 def get_all_ranks_from_group(group=None):
     global cdb
     assert cdb is not None and cdb.is_initialized(
-    ), 'DeepSpeed backend not set, please initialize it using init_process_group()'
+    ), 'MCR-DL backend not set, please initialize it using init_process_group()'
     rank = 0
     group_ranks = []
     try:
@@ -600,7 +600,7 @@ def get_all_ranks_from_group(group=None):
     return group_ranks
 
 
-# Main DeepSpeed Comms. public API.
+# Main MCR-DL Comms. public API.
 def init_distributed(dist_backend=None,
                      auto_mpi_discovery=True,
                      distributed_port=TORCH_DISTRIBUTED_DEFAULT_PORT,
@@ -620,19 +620,19 @@ def init_distributed(dist_backend=None,
         verbose: Optional (bool). verbose logging
         timeout: Optional (timedelta). Timeout for operations executed against the process group. Default value equals 30 minutes.
         init_method: Optional (string). Torch distributed, URL specifying how to initialize the process group. Default is “env://” if no init_method or store is specified.
-        config: Optional (dict). DeepSpeed configuration for setting up comms options (e.g. Comms profiling)
+        config: Optional (dict). MCR-DL configuration for setting up comms options (e.g. Comms profiling)
         rank: Optional (int). The current manually specified rank. Some init_method like “tcp://” need the rank and world_size as well (see: https://pytorch.org/docs/stable/distributed.html#tcp-initialization)
         world_size: Optional (int). Desired world_size for the TCP or Shared file-system initialization.
     '''
     global cdb
 
-    configure(deepspeed_config=config)
+    configure(mcr_dl_config=config)
 
     if dist_init_required is None:
         dist_init_required = cdb is None or not cdb.is_initialized()
 
     if cdb is None:
-        init_deepspeed_backend(get_accelerator().communication_backend_name(), timeout, init_method)
+        init_mcr_dl_backend(get_accelerator().communication_backend_name(), timeout, init_method)
         set_backend()
         utils.logger.info(f'cdb={cdb}')
     if cdb is None and torch.distributed.is_initialized():
@@ -643,13 +643,13 @@ def init_distributed(dist_backend=None,
     if dist_init_required is False:
         assert (
             cdb is not None and cdb.is_initialized() is True
-        ), "Distributed backend is not initialized. Please set dist_init_required to True or initialize before calling deepspeed.initialize()"
+        ), "Distributed backend is not initialized. Please set dist_init_required to True or initialize before calling mcr_dl.initialize()"
     else:
         # Initialize torch distributed if needed
         required_env = ["RANK", "WORLD_SIZE", "MASTER_ADDR", "MASTER_PORT", "LOCAL_RANK"]
         if auto_mpi_discovery and not all(map(lambda v: v in os.environ, required_env)):
             if verbose:
-                utils.logger.info("Not using the DeepSpeed or dist launchers, attempting to detect MPI environment...")
+                utils.logger.info("Not using the MCR-DL or dist launchers, attempting to detect MPI environment...")
             if in_aml() and not in_dlts():
                 patch_aml_env_for_torch_nccl_backend(verbose=verbose)
             elif in_aws_sm():
@@ -665,7 +665,7 @@ def init_distributed(dist_backend=None,
             if dist_backend is None:
                 dist_backend = get_accelerator().communication_backend_name()
             if int(os.getenv('RANK', '0')) == 0:
-                utils.logger.info('Initializing TorchBackend in DeepSpeed with backend {}'.format(dist_backend))
+                utils.logger.info('Initializing TorchBackend in MCR-DL with backend {}'.format(dist_backend))
             # Create a torch backend object, initialize torch distributed, and assign to cdb
             cdb = TorchBackend(dist_backend, timeout, init_method, rank, world_size)
 

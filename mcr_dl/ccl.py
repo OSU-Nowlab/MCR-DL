@@ -17,7 +17,7 @@ def build_ccl_op():
     if builder is None:
         return None
     ccl_cpp_module = builder.load()
-    print(f'DeepSpeed {builder.absolute_name()} built successfully')
+    print(f'MCR-DL {builder.absolute_name()} built successfully')
     return ccl_cpp_module
 
 

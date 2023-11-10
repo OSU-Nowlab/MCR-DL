@@ -3,7 +3,7 @@
 
 # DeepSpeed Team
 
-from mcr_dl import utils_2 as utils
+from mcr_dl import utils
 
 from .utils import *
 from .backend import *
