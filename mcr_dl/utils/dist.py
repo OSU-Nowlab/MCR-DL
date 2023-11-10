@@ -10,7 +10,7 @@ from mcr_dl.utils_2 import get_caller_func
 
 def get_local_rank_from_launcher():
 
-    # DeepSpeed launcher will set it so get from there
+    # mcr-dl launcher will set it so get from there
     rank = os.environ.get('LOCAL_RANK')
 
     if rank is None:
@@ -25,7 +25,7 @@ def get_local_rank_from_launcher():
 
 def get_world_rank_from_launcher():
 
-    # DeepSpeed launcher will set it so get from there
+    # mcr-dl launcher will set it so get from there
     rank = os.environ.get('RANK')
 
     if rank is None:
@@ -39,7 +39,7 @@ def get_world_rank_from_launcher():
 
 
 def get_world_size_from_launcher():
-    # DeepSpeed launcher will set it so get from there
+    # mcr-dl launcher will set it so get from there
     size = os.environ.get('WORLD_SIZE')
     rank = os.environ.get('RANK')
 

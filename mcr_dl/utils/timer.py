@@ -5,7 +5,7 @@
 
 import time
 from numpy import mean
-from mcr_dl.utils_2.logging import log_dist
+from mcr_dl.utils.logging import log_dist
 from mcr_dl.cuda_accelerator import get_accelerator
 
 FORWARD_MICRO_TIMER = 'fwd_microstep'
@@ -205,7 +205,7 @@ class ThroughputTimer:
         monitor_memory=False,
         logging_fn=None,
     ):
-        from deepspeed.utils import logger
+        from mcr_dl.utils import logger
         self.start_time = 0
         self.end_time = 0
         self.started = False

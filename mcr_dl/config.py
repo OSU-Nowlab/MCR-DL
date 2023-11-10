@@ -22,12 +22,3 @@ class CommsLoggerConfig(CommsConfig):
     prof_ops: list = COMMS_LOGGER_PROF_OPS_DEFAULT
     verbose: bool = COMMS_LOGGER_VERBOSE_DEFAULT
     debug: bool = COMMS_LOGGER_DEBUG_DEFAULT
-
-
-class DeepSpeedCommsConfig:
-
-    def __init__(self, ds_config):
-        self.comms_logger_enabled = 'comms_logger' in ds_config
-
-        if self.comms_logger_enabled:
-            self.comms_logger = CommsLoggerConfig(**ds_config['comms_logger'])

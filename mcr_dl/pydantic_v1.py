@@ -5,8 +5,8 @@
 """Pydantic v1 compatibility module.
 
 Pydantic v2 introduced breaking changes that hinder its adoption:
-https://docs.pydantic.dev/latest/migration/. To provide deepspeed users the option to
-migrate to pydantic v2 on their own timeline, deepspeed uses this compatibility module
+https://docs.pydantic.dev/latest/migration/. To provide mcr-dl users the option to
+migrate to pydantic v2 on their own timeline, mcr-dl uses this compatibility module
 as a pydantic-version-agnostic alias for pydantic's v1 API.
 """
 

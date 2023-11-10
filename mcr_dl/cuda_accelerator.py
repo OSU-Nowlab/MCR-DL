@@ -45,13 +45,6 @@ class CUDA_Accelerator():
         return self._communication_backend_name
 
     def op_builder_dir(self):
-        # try:
-        #     # is op_builder from deepspeed or a 3p version? this should only succeed if it's deepspeed
-        #     # if successful this also means we're doing a local install and not JIT compile path
-        #     from op_builder import __deepspeed__  # noqa: F401 # type: ignore
-        #     return "op_builder"
-        # except ImportError:
-        #     return "mcr_dl.op_builder"
         return "mcr_dl.op_builder"
 
     # dict that holds class name <--> class type mapping i.e.
