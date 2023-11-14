@@ -24,15 +24,15 @@
 import torch
 import os
 
-from constants import TORCH_DISTRIBUTED_DEFAULT_PORT, default_pg_timeout
+from .constants import TORCH_DISTRIBUTED_DEFAULT_PORT, default_pg_timeout
 from .constants import *
 from .reduce_op import *
 from .cuda_accelerator import get_accelerator
-from ccl import CCLBackend
+from .ccl import CCLBackend
 
 from mcr_dl.utils.comms_logging import CommsLogger
 from mcr_dl.utils import timer, get_caller_func
-from torch import TorchBackend
+from .torch import TorchBackend
 
 from mcr_dl import utils
 from datetime import timedelta
@@ -53,7 +53,7 @@ ccl_backend = None
 hccl_backend = None
 
 # This should be set here so all rank/size information from the launcher can be propagated
-from utils import *
+from mcr_dl.utils import *
 
 
 class ProcessGroup():

@@ -37,9 +37,34 @@ class CUDA_Accelerator():
         except pynvml.NVMLError:
             pynvml = None
             return
+    def Event(self):
+        return torch.cuda.Event
+
+    # Device APIs
+    def device_name(self, device_index=None):
+        if device_index == None:
+            return 'cuda'
+        return 'cuda:{}'.format(device_index)
+
+    def device(self, device_index=None):
+        return torch.cuda.device(device_index)
+
+    def set_device(self, device_index):
+        torch.cuda.set_device(device_index)
+
+    def current_device(self):
+        return torch.cuda.current_device()
 
     def current_device_name(self):
         return 'cuda:{}'.format(torch.cuda.current_device())
+
+    def device_count(self):
+        return torch.cuda.device_count()
+
+    def synchronize(self, device_index=None):
+        return torch.cuda.synchronize(device_index)
+
+
 
     def communication_backend_name(self):
         return self._communication_backend_name
@@ -92,4 +117,5 @@ def get_accelerator():
         return ds_accelerator
 
     ds_accelerator = CUDA_Accelerator()
+    return ds_accelerator
 
