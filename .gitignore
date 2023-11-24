@@ -1,4 +1,9 @@
-MCR_DL.egg-info/
-mcr_dl/__pycache__/
-mcr_dl/utils/__pycache__/
-tests/__pycache__/
+__pycache__
+
+mcr_dl/git_version_info_installed.py
+
+build/
+dist/
+*.so
+mcr_dl.egg-info/
+build.txt
