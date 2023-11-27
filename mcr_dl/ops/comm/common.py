@@ -11,7 +11,7 @@ def build_op():
     builder = CommBuilder()
     try:
         common_cpp_module = builder.load()
-        print(f'DeepSpeed {builder.absolute_name()} built successfully')
+        print(f'MCR-DL {builder.absolute_name()} built successfully')
         return common_cpp_module
     except Exception as inst:
         # if comm cannot be built, use torch.dist.

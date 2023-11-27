@@ -9,7 +9,7 @@ def build_mpi_op():
     builder = op_builder.MPICommBuilder()
     try:
         mpi_cpp_module = builder.load()
-        print(f'DeepSpeed {builder.absolute_name()} built successfully')
+        print(f'MCR-DL {builder.absolute_name()} built successfully')
         return mpi_cpp_module
     except Exception as inst:
        # if comm cannot be built, use torch.dist.

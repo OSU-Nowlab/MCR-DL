@@ -5,48 +5,15 @@
 
 import os
 import torch
-import mcr_dl as dist
-from common import DistributedTest, DistributedFixture, get_master_port, set_accelerator_visible
-from simple_model import SimpleModel
+
+import mcr_dl.utils as utils
+from .common import DistributedTest, DistributedFixture, get_master_port, set_accelerator_visible
+from .simple_model import SimpleModel
 from mcr_dl.cuda_accelerator import get_accelerator
-from argparse import ArgumentParser
+from mcr_dl.comm import mpi_discovery
+from mcr_dl.utils import set_mpi_dist_environemnt
+
 import pytest
-from mcr_dl.constants import TORCH_DISTRIBUTED_DEFAULT_PORT
-# from deepspeed.ops.op_builder import FusedAdamBuilder
-
-# if not deepspeed.ops.__compatible_ops__[FusedAdamBuilder.NAME]:
-#     pytest.skip("This op had not been implemented on this system.", allow_module_level=True)
-def parse_args():
-    parser = ArgumentParser(description="DeepSpeed distributed training launch"
-                            " utility that creates multiple distributed"
-                            " processes on a single node")
-
-    # Optional arguments for the launch helper
-    parser.add_argument("--node_rank",
-                        type=int,
-                        default=0,
-                        help="The rank of the node for multi-node distributed "
-                        "training")
-    parser.add_argument("--master_addr",
-                        default="127.0.0.1",
-                        type=str,
-                        help="Master node (rank 0)'s address, should be either"
-                        " the IP address or the hostname of node 0, for"
-                        " single node multi-proc training, the"
-                        " --master_addr can simply be 127.0.0.1")
-    parser.add_argument("--master_port",
-                        default=TORCH_DISTRIBUTED_DEFAULT_PORT,
-                        type=int,
-                        help="Master node (rank 0)'s free port that needs to "
-                        "be used for communication during distributed "
-                        "training")
-    parser.add_argument("--world_size",
-                        type=int,
-                        default=1,
-                        help="TBD")
-    # rest from the training program
-    parser.add_argument('training_script_args')
-    return parser.parse_args()
 
 def env2int(env_list, default=-1):
     for e in env_list:
@@ -54,64 +21,39 @@ def env2int(env_list, default=-1):
         if val >= 0: return val
     return default
 
+def init_mcr_dl_dist(args_backend):
+    global dist
+    import mcr_dl
+    import mcr_dl as dist
+    mcr_dl.init_distributed(dist_backend=args_backend, use_mcr_dl=True)
+    local_rank = int(os.environ['LOCAL_RANK'])
+    get_accelerator().set_device(local_rank)
+
+def init_torch_distributed(backend):
+    global dist
+    import torch.distributed as dist
+    if backend == 'nccl':
+        mpi_discovery()
+    elif backend == 'mpi':
+        set_mpi_dist_environemnt()
+    dist.init_process_group(backend)
+    local_rank = int(os.environ['LOCAL_RANK'])
+    #get_accelerator().set_device(local_rank)
+
+
 @pytest.fixture(scope="session", autouse=True)
-def setup_session():
+def setup_session(pytestconfig):
     # Initialization for test session
-    # args = parse_args()
-    # current_env = os.environ.copy()
-
-    # # dist_world_size = 0
-    # # for node_id in node_list:
-    # #     gids = world_info[node_id]
-    # #     dist_world_size += len(gids)
-    # #     for gid in gids:
-    # #         global_rank_mapping[node_id].append(curr_global_rank)
-    # #         curr_global_rank += 1
-
-    # os.environ["MASTER_ADDR"] = args.master_addr
-    # os.environ["MASTER_PORT"] = str(args.master_port)
-    # os.environ["WORLD_SIZE"] = str(args.world_size)
-    # os.environ["RANK"] = str(args.node_rank)
-    # # current_env["CROSS_SIZE"] = str(args.nnodes)
-    # # current_env["LOCAL_SIZE"] = str(args.local_size)
-
-    # discover rank/size info from env
-    if 'MASTER_PORT' not in os.environ:
-        os.environ['MASTER_PORT'] = str(TORCH_DISTRIBUTED_DEFAULT_PORT)
-    if 'MASTER_ADDR' not in os.environ:
-        # try:
-        #     from mpi4py import MPI
-        # except ModuleNotFoundError:
-        #     print(
-        #         "Cannot import mpi4py and MASTER_ADDR not set. Please either install mpi4py or set the MASTER_ADDR on all ranks"
-        #     )
-        #     raise Exception
-        # import subprocess
-        # comm = MPI.COMM_WORLD
-        # rank = comm.Get_rank()
-        # master_addr = None
-        # if rank == 0:
-        #     hostname_cmd = ["hostname -I"]
-        #     result = subprocess.check_output(hostname_cmd, shell=True)
-        #     master_addr = result.decode('utf-8').split()[0]
-        # master_addr = comm.bcast(master_addr, root=0)
-        master_addr = '10.1.1.21'
-        os.environ['MASTER_ADDR'] = master_addr
-    local_rank = env2int(
-        ['LOCAL_RANK', 'MPI_LOCALRANKID', 'OMPI_COMM_WORLD_LOCAL_RANK', 'MV2_COMM_WORLD_LOCAL_RANK', 'SLURM_LOCALID'])
-    if 'LOCAL_RANK' not in os.environ:
-        os.environ['LOCAL_RANK'] = str(local_rank)
-    rank = env2int(['RANK', 'MPI_RANKID', 'OMPI_COMM_WORLD_RANK', 'MV2_COMM_WORLD_RANK', 'SLURM_PROCID'])
-    if 'RANK' not in os.environ:
-        os.environ['RANK'] = str(rank)
-    world_size = env2int(['WORLD_SIZE', 'OMPI_COMM_WORLD_SIZE', 'MV2_COMM_WORLD_SIZE', 'SLURM_NPROCS'])
-    if 'WORLD_SIZE' not in os.environ:
-        os.environ['WORLD_SIZE'] = str(world_size)
-
-    print("\nSetting up resources for the entire test session")
     set_accelerator_visible()
-    torch.distributed.init_process_group(backend='nccl')
-    dist.init_distributed(dist_backend="nccl")
+    _backend = pytestconfig.getoption("backend")
+    _dist = pytestconfig.getoption("dist")
+    if _dist == 'mcr_dl':
+        init_mcr_dl_dist(_backend)
+    elif _dist == 'torch':
+        init_torch_distributed(_backend)
+    else:
+        print(f"distributed framework {_dist} not supported")
+        exit(0)
 
 # class TestInit(DistributedTest):
 #     world_size = 3

@@ -3,22 +3,22 @@
 
 # DeepSpeed Team
 """
-    DeepSpeed Communication Package: deepspeed.comm
-    deepspeed.comm
-        -- import and use deepspeed.ops.comm
+    MCR-DL Communication Package: mcr_dl
+    mcr_dl
+        -- import and use mcr_dl
         -- use torch.distributed directly if both this package and torch.distributed use the same NCCL version
         -- use custom collectives
-            -- can either use torch.dist or ds.ops.comm?
+            -- can either use torch.dist or mcr_dl.ops.comm?
         Note: the old 1-bit compressed allreduce variants that resided in deepspeed.runtime.comm will be moved here as well.
-    deepspeed.comm API
+    mcr_dl API
         -- must be kept fully compatible (same signatures) as torch.dist API to ensure backward/cross-framework compatibility.
         -- e.g. if a client code used
-            from deepspeed import comm as dist
+            import mcr_dl as dist
             instead of
             import torch.distributed as dist
             The code should work without breaking any of the public torch.distributed functionality
     Future:
-        -- deepspeed groups API should be brought into ds.comm
+        -- mcr_dl groups API should be brought into ds.comm
 """
 
 import torch
@@ -30,7 +30,7 @@ from .reduce_op import *
 from .cuda_accelerator import get_accelerator
 from .ccl import CCLBackend
 from .nccl import NcclBackend
-
+from .mpi import MPIBackend
 from mcr_dl.utils.comms_logging import CommsLogger
 from mcr_dl.utils import timer, get_caller_func
 from .torch import TorchBackend
@@ -612,7 +612,7 @@ def init_distributed(dist_backend=None,
                      config=None,
                      rank=-1,
                      world_size=-1,
-                     use_deepspeed=False):
+                     use_mcr_dl=False):
     ''' Initialize dist backend, potentially performing MPI discovery if needed
 
     Arguments:
@@ -637,11 +637,11 @@ def init_distributed(dist_backend=None,
         init_mcr_dl_backend(get_accelerator().communication_backend_name(), timeout, init_method)
         set_backend()
         utils.logger.info(f'cdb={cdb}')
+
     if cdb is None and torch.distributed.is_initialized():
         # The user initialized torch.dist themselves, create cdb and short-circuit
         cdb = TorchBackend(dist_backend, timeout, init_method)
         return
-
     if dist_init_required is False:
         assert (
             cdb is not None and cdb.is_initialized() is True
@@ -663,16 +663,22 @@ def init_distributed(dist_backend=None,
                 utils.logger.info('Distributed backend already initialized')
         else:
             assert isinstance(timeout, timedelta)
-            if use_deepspeed:
+            if use_mcr_dl:
                 if dist_backend == 'nccl':
+                    print("Calling NcclBackend0")
                     if int(os.getenv('RANK', '0')) == 0:
-                        utils.logger.info('Initializing NcclBackend in DeepSpeed')
+                        utils.logger.info('Initializing NcclBackend in MCR-DL')
                     cdb = NcclBackend()
+                elif dist_backend == 'mpi' :
+                    assert True, "Pure MPIBackend is not supported."
+                    if int(os.getenv('RANK', '0')) == 0:
+                        utils.logger.info('Initializing MPIBackend in MCR-DL')
+                    cdb = MPIBackend()
             else:
                 # Create a torch backend object, initialize torch distributed, and assign to cdb
                 if int(os.getenv('RANK', '0')) == 0:
                     utils.logger.info(
-                        'Initializing TorchBackend in DeepSpeed with backend {}'.format(
+                        'Initializing TorchBackend in MCR-DL with backend {}'.format(
                             dist_backend))
                 cdb = TorchBackend(dist_backend, timeout, init_method)
 
@@ -681,49 +687,29 @@ def mpi_discovery(distributed_port=TORCH_DISTRIBUTED_DEFAULT_PORT, verbose=True)
     '''
     Discovery MPI environment via mpi4py and map to relevant dist state
     '''
-    # from mpi4py import MPI
-    # import subprocess
-    # comm = MPI.COMM_WORLD
-    # rank = comm.Get_rank()
-    # world_size = comm.Get_size()
+    from mpi4py import MPI
+    import subprocess
+    comm = MPI.COMM_WORLD
+    rank = comm.Get_rank()
+    world_size = comm.Get_size()
 
-    # master_addr = None
-    # if rank == 0:
-    #     hostname_cmd = ["hostname -I"]
-    #     result = subprocess.check_output(hostname_cmd, shell=True)
-    #     master_addr = result.decode('utf-8').split()[0]
-    # master_addr = comm.bcast(master_addr, root=0)
+    master_addr = None
+    if rank == 0:
+        hostname_cmd = ["hostname -I"]
+        result = subprocess.check_output(hostname_cmd, shell=True)
+        master_addr = result.decode('utf-8').split()[0]
+    master_addr = comm.bcast(master_addr, root=0)
 
-    # # Determine local rank by assuming hostnames are unique
-    # proc_name = MPI.Get_processor_name()
-    # all_procs = comm.allgather(proc_name)
-    # local_rank = sum([i == proc_name for i in all_procs[:rank]])
+    # Determine local rank by assuming hostnames are unique
+    proc_name = MPI.Get_processor_name()
+    all_procs = comm.allgather(proc_name)
+    local_rank = sum([i == proc_name for i in all_procs[:rank]])
 
-    # os.environ['RANK'] = str(rank)
-    # os.environ['WORLD_SIZE'] = str(world_size)
-    # os.environ['LOCAL_RANK'] = str(local_rank)
-    # os.environ['MASTER_ADDR'] = master_addr
-    # os.environ['MASTER_PORT'] = str(distributed_port)
-    def env2int(env_list, default=-1):
-        for e in env_list:
-            val = int(os.environ.get(e, -1))
-            if val >= 0: return val
-        return default
-    if 'MASTER_PORT' not in os.environ:
-        os.environ['MASTER_PORT'] = str(TORCH_DISTRIBUTED_DEFAULT_PORT)
-    if 'MASTER_ADDR' not in os.environ:
-        master_addr = '10.1.1.21'
-        os.environ['MASTER_ADDR'] = master_addr
-    local_rank = env2int(
-        ['LOCAL_RANK', 'MPI_LOCALRANKID', 'OMPI_COMM_WORLD_LOCAL_RANK', 'MV2_COMM_WORLD_LOCAL_RANK', 'SLURM_LOCALID'])
-    if 'LOCAL_RANK' not in os.environ:
-        os.environ['LOCAL_RANK'] = str(local_rank)
-    rank = env2int(['RANK', 'MPI_RANKID', 'OMPI_COMM_WORLD_RANK', 'MV2_COMM_WORLD_RANK', 'SLURM_PROCID'])
-    if 'RANK' not in os.environ:
-        os.environ['RANK'] = str(rank)
-    world_size = env2int(['WORLD_SIZE', 'OMPI_COMM_WORLD_SIZE', 'MV2_COMM_WORLD_SIZE', 'SLURM_NPROCS'])
-    if 'WORLD_SIZE' not in os.environ:
-        os.environ['WORLD_SIZE'] = str(world_size)
+    os.environ['RANK'] = str(rank)
+    os.environ['WORLD_SIZE'] = str(world_size)
+    os.environ['LOCAL_RANK'] = str(local_rank)
+    os.environ['MASTER_ADDR'] = master_addr
+    os.environ['MASTER_PORT'] = str(distributed_port)
 
     if verbose:
         utils.logger.info(

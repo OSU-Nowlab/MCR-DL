@@ -18,6 +18,7 @@ import distutils.sysconfig
 from distutils.errors import CompileError, LinkError
 from abc import ABC, abstractmethod
 from typing import List
+from mcr_dl.utils import logger #TBRemoved
 
 YELLOW = '\033[93m'
 END = '\033[0m'
@@ -92,12 +93,12 @@ def assert_no_cuda_mismatch(name=""):
             return True
         elif os.getenv("DS_SKIP_CUDA_CHECK", "0") == "1":
             print(
-                f"{WARNING} DeepSpeed Op Builder: Installed CUDA version {sys_cuda_version} does not match the "
+                f"{WARNING} MCR-DL Op Builder: Installed CUDA version {sys_cuda_version} does not match the "
                 f"version torch was compiled with {torch.version.cuda}."
                 "Detected `DS_SKIP_CUDA_CHECK=1`: Allowing this combination of CUDA, but it may result in unexpected behavior."
             )
             return True
-        raise Exception(f">- DeepSpeed Op Builder: Installed CUDA version {sys_cuda_version} does not match the "
+        raise Exception(f">- MCR-DL Op Builder: Installed CUDA version {sys_cuda_version} does not match the "
                         f"version torch was compiled with {torch.version.cuda}, unable to compile "
                         "cuda/cpp extensions without a matching cuda version.")
     return True
@@ -126,7 +127,7 @@ class OpBuilder(ABC):
     @abstractmethod
     def sources(self):
         '''
-        Returns list of source files for your op, relative to root of mcr_dl package (i.e., DeepSpeed/mcr_dl)
+        Returns list of source files for your op, relative to root of mcr_dl package (i.e., MCR-DL/mcr_dl)
         '''
         pass
 
@@ -138,9 +139,9 @@ class OpBuilder(ABC):
         install_torch_version = torch_info['version']
         current_torch_version = ".".join(torch.__version__.split('.')[:2])
         if install_torch_version != current_torch_version:
-            raise RuntimeError("PyTorch version mismatch! DeepSpeed ops were compiled and installed "
+            raise RuntimeError("PyTorch version mismatch! MCR-DL ops were compiled and installed "
                                "with a different version than what is being used at runtime. "
-                               f"Please re-install DeepSpeed or switch torch versions. "
+                               f"Please re-install MCR-DL or switch torch versions. "
                                f"Install torch version={install_torch_version}, "
                                f"Runtime torch version={current_torch_version}")
 
@@ -150,18 +151,18 @@ class OpBuilder(ABC):
             current_cuda_version = ".".join(torch.version.cuda.split('.')[:2])
             install_cuda_version = torch_info['cuda_version']
             if install_cuda_version != current_cuda_version:
-                raise RuntimeError("CUDA version mismatch! DeepSpeed ops were compiled and installed "
+                raise RuntimeError("CUDA version mismatch! MCR-DL ops were compiled and installed "
                                    "with a different version than what is being used at runtime. "
-                                   f"Please re-install DeepSpeed or switch torch versions. "
+                                   f"Please re-install MCR-DL or switch torch versions. "
                                    f"Install CUDA version={install_cuda_version}, "
                                    f"Runtime CUDA version={current_cuda_version}")
         else:
             current_hip_version = ".".join(torch.version.hip.split('.')[:2])
             install_hip_version = torch_info['hip_version']
             if install_hip_version != current_hip_version:
-                raise RuntimeError("HIP version mismatch! DeepSpeed ops were compiled and installed "
+                raise RuntimeError("HIP version mismatch! MCR-DL ops were compiled and installed "
                                    "with a different version than what is being used at runtime. "
-                                   f"Please re-install DeepSpeed or switch torch versions. "
+                                   f"Please re-install MCR-DL or switch torch versions. "
                                    f"Install HIP version={install_hip_version}, "
                                    f"Runtime HIP version={current_hip_version}")
 
@@ -209,7 +210,7 @@ class OpBuilder(ABC):
 
     def include_paths(self):
         '''
-        Returns list of include paths, relative to root of mcr_dl package (i.e., DeepSpeed/mcr_dl)
+        Returns list of include paths, relative to root of mcr_dl package (i.e., MCR-DL/mcr_dl)
         '''
         return []
 
@@ -443,13 +444,11 @@ class OpBuilder(ABC):
 
         from mcr_dl.git_version_info import installed_ops, torch_info
         if installed_ops.get(self.name, False):
-            print("INSTALLED OPS start:", installed_ops)
             # Ensure the op we're about to load was compiled with the same
             # torch/cuda versions we are currently using at runtime.
             self.validate_torch_version(torch_info)
             if torch.cuda.is_available() and isinstance(self, CUDAOpBuilder):
                 self.validate_torch_op_version(torch_info)
-            print("INSTALLED OPS:", installed_ops)
             op_module = importlib.import_module(self.absolute_name())
             __class__._loaded_ops[self.name] = op_module
             return op_module
@@ -502,7 +501,6 @@ class OpBuilder(ABC):
 
         if self.is_rocm_pytorch():
             cxx_args.append("-D__HIP_PLATFORM_AMD__=1")
-
         op_module = load(name=self.name,
                          sources=self.strip_empty_entries(sources),
                          extra_include_paths=self.strip_empty_entries(extra_include_paths),
@@ -510,7 +508,6 @@ class OpBuilder(ABC):
                          extra_cuda_cflags=nvcc_args,
                          extra_ldflags=self.strip_empty_entries(self.extra_ldflags()),
                          verbose=verbose)
-
         build_duration = time.time() - start_build
         if verbose:
             print(f"Time to load {self.name} op: {build_duration} seconds")
@@ -520,7 +517,6 @@ class OpBuilder(ABC):
             os.environ["TORCH_CUDA_ARCH_LIST"] = torch_arch_list
 
         __class__._loaded_ops[self.name] = op_module
-
         return op_module
 
 

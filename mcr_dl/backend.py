@@ -3,7 +3,7 @@
 
 # DeepSpeed Team
 """
-DeepSpeed Communication Backend.
+MCR-DL Communication Backend.
 
 In the future, directly use NCCL/MPI/Gloo/etc without requiring torch.distributed. Simply wrap torch.distributed for now.
 
@@ -14,7 +14,6 @@ In the future, directly use NCCL/MPI/Gloo/etc without requiring torch.distribute
  - GLOO -- [EXPERIMENTAL]
 # DS backend wrapper for torch.distributed [DEFAULT]
  - T-NCCL -- [DEFAULT]
- - T-GLOO
  - T-MPI
 
 # Backend is the base class

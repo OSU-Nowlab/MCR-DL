@@ -23,7 +23,7 @@ from _pytest.outcomes import Skipped
 from _pytest.fixtures import FixtureLookupError, FixtureFunctionMarker
 
 # Worker timeout for tests that hang
-DEEPSPEED_TEST_TIMEOUT = 600
+MCR_DL_TEST_TIMEOUT = 600
 
 
 def is_rocm_pytorch():
@@ -114,7 +114,7 @@ class DistributedExec(ABC):
     requires_cuda_env = True
     reuse_dist_env = False
     _pool_cache = {}
-    exec_timeout = DEEPSPEED_TEST_TIMEOUT
+    exec_timeout = MCR_DL_TEST_TIMEOUT
 
     @abstractmethod
     def run(self):
@@ -189,7 +189,7 @@ class DistributedExec(ABC):
     def _dist_run(self, local_rank, num_procs, master_port):
         skip_msg = ''
         if not dist.is_initialized():
-            """ Initialize deepspeed.comm and execute the user function. """
+            """ Initialize mcr_dl and execute the user function. """
             if self.set_dist_env:
                 os.environ['MASTER_ADDR'] = '127.0.0.1'
                 os.environ['MASTER_PORT'] = str(master_port)
@@ -197,7 +197,7 @@ class DistributedExec(ABC):
                 # NOTE: unit tests don't support multi-node so local_rank == global rank
                 os.environ['RANK'] = str(local_rank)
                 # In case of multiprocess launching LOCAL_SIZE should be same as WORLD_SIZE
-                # DeepSpeed single node launcher would also set LOCAL_SIZE accordingly
+                # MCR-DL single node launcher would also set LOCAL_SIZE accordingly
                 os.environ['LOCAL_SIZE'] = str(num_procs)
                 os.environ['WORLD_SIZE'] = str(num_procs)
 

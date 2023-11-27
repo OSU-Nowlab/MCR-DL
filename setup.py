@@ -4,7 +4,7 @@
 
 # DeepSpeed Team
 """
-DeepSpeed library
+MCR-DL library
 
 To build wheel on Windows:
 1. Install pytorch, such as pytorch 1.12 + cuda 11.6.
@@ -225,7 +225,7 @@ if sys.platform == "win32":
     create_dir_symlink('..\\accelerator', '.\\MCR-DL\\accelerator')
     egg_info.manifest_maker.template = 'MANIFEST_win.in'
 
-# Parse the DeepSpeed version string from version.txt.
+# Parse the MCR-DL version string from version.txt.
 version_str = open('version.txt', 'r').read().strip()
 
 # Build specifiers like .devX can be added at install time. Otherwise, add the git hash.
@@ -298,39 +298,18 @@ setup(name='mcr_dl',
       long_description=readme_text,
       long_description_content_type='text/markdown',
       author='NOWLAB Team',
-    #   author_email='MCR_DL-info@microsoft.com',
-    #   url='http://MCR_DL.ai',
-    #   project_urls={
-    #       'Documentation': 'https://MCR_DL.readthedocs.io',
-    #       'Source': 'https://github.com/microsoft/DeepSpeed',
-    #   },
+      author_email='https://hidl.cse.ohio-state.edu',
+      project_urls={
+        #   'Documentation': 'https://MCR_DL.readthedocs.io',
+          'Source': 'https://github.com/OSU-Nowlab/MCR-DL',
+      },
       install_requires=install_requires,
       extras_require=extras_require,
       packages=find_packages(include=['mcr_dl', 'mcr_dl.*']),
       include_package_data=True,
-    #   scripts=[
-    #       'bin/mcr_dl', 'bin/mcr_dl.pt', 'bin/ds', 'bin/ds_ssh', 'bin/ds_report', 'bin/ds_bench', 'bin/dsr',
-    #       'bin/ds_elastic'
-    #   ],
-    #   classifiers=[
-    #       'Programming Language :: Python :: 3.6', 'Programming Language :: Python :: 3.7',
-    #       'Programming Language :: Python :: 3.8', 'Programming Language :: Python :: 3.9',
-    #       'Programming Language :: Python :: 3.10'
-    #   ],
     #   license='Apache Software License 2.0',
       ext_modules=ext_modules,
       cmdclass=cmdclass)
 
 end_time = time.time()
 print(f'MCR-DL build time = {end_time - start_time} secs')
-
-
-# from setuptools import setup, find_packages
-
-# setup(
-#     name="MCR-DL",
-#     version="1",
-#     url="https://github.com/OSU-Nowlab/MCR-DL",
-#     packages=find_packages(where="."),
-#     package_dir={"mcr_dl": "mcr_dl"},
-# )

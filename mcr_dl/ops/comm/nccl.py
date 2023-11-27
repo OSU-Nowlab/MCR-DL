@@ -1,6 +1,6 @@
 import torch
 from mcr_dl.ops import op_builder
-
+from mcr_dl.utils import logger
 nccl_cpp_module = None
 
 
@@ -8,9 +8,7 @@ def build_nccl_op():
     global nccl_cpp_module
     builder = op_builder.NCCLCommBuilder()
     try:
-        print(f'DeepSpeed trying to build {builder.absolute_name()}')
         nccl_cpp_module = builder.load()
-        print(f'DeepSpeed {builder.absolute_name()} built successfully')
         return nccl_cpp_module
     except Exception as inst:
         # if comm cannot be built, use torch.dist.
