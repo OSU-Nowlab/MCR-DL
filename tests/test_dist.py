@@ -15,11 +15,6 @@ from mcr_dl.utils import set_mpi_dist_environemnt
 
 import pytest
 
-def env2int(env_list, default=-1):
-    for e in env_list:
-        val = int(os.environ.get(e, -1))
-        if val >= 0: return val
-    return default
 
 def init_mcr_dl_dist(args_backend):
     global dist

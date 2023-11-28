@@ -141,7 +141,7 @@ def env2int(env_list, default=-1):
 
 def set_mpi_dist_environemnt(master_addr = None):
     if master_addr is not None:
-        os.environ['MASTER_ADDR'] = "10.1.1.21"
+        os.environ['MASTER_ADDR'] = master_addr
     local_rank = env2int(
         ['LOCAL_RANK', 'MPI_LOCALRANKID', 'OMPI_COMM_WORLD_LOCAL_RANK', 'MV2_COMM_WORLD_LOCAL_RANK', 'SLURM_LOCALID'])
     if 'LOCAL_RANK' not in os.environ:

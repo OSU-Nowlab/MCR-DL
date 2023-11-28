@@ -5,7 +5,7 @@
 """
 MCR-DL Communication Backend.
 
-In the future, directly use NCCL/MPI/Gloo/etc without requiring torch.distributed. Simply wrap torch.distributed for now.
+MCR-DL supports NCCL and MPI with torch.distributed, as well as pure NCCL and MPI backend (i.e. without requiring torch.distributed). By default, torch.distributed is used.
 
 # Custom DS Backends -- Direct C/Ops
  - NCCL -- [EXPERIMENTAL]
@@ -17,7 +17,7 @@ In the future, directly use NCCL/MPI/Gloo/etc without requiring torch.distribute
  - T-MPI
 
 # Backend is the base class
-     -- NcclBackend, MpiBackend, and TorchBackend are the main subclasses. TorchBackend is the only officially supported backend for now.
+     -- NcclBackend, MpiBackend, and TorchBackend are the main subclasses. TorchBackend, NcclBackend, MpiBackend is the officially supported backend..
 """
 
 

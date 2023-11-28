@@ -28,7 +28,6 @@ def init_mcr_dl_comm(backend):
 def init_processes(args_dist, args_backend):
     print(f'Comm : {args_dist}  Backend : {args_backend}')
     if args_dist == 'mcr_dl':
-        #print("Is initialized : ", torch.distributed.is_initialized())
         init_mcr_dl_comm(args_backend)
     elif args_dist == 'torch':
         init_torch_distributed(args_backend)
@@ -49,4 +48,4 @@ if __name__ == "__main__":
     all_reduce()
 
 
-print("finished..")
+print("finished......")
