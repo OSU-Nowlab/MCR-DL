@@ -1,7 +1,5 @@
 __pycache__
-
 mcr_dl/git_version_info_installed.py
-
 build/
 dist/
 *.so

@@ -17,7 +17,7 @@ MCR-DL supports NCCL and MPI with torch.distributed, as well as pure NCCL and MP
  - T-MPI
 
 # Backend is the base class
-     -- NcclBackend, MpiBackend, and TorchBackend are the main subclasses. TorchBackend, NcclBackend, MpiBackend is the officially supported backend..
+     -- NCCLBackend, MPIBackend, and TorchBackend are the main subclasses.
 """
 
 

@@ -29,7 +29,7 @@ from .constants import *
 from .reduce_op import *
 from .cuda_accelerator import get_accelerator
 from .ccl import CCLBackend
-from .nccl import NcclBackend
+from .nccl import NCCLBackend
 from .mpi import MPIBackend
 from mcr_dl.utils.comms_logging import CommsLogger
 from mcr_dl.utils import timer, get_caller_func
@@ -665,10 +665,9 @@ def init_distributed(dist_backend=None,
             assert isinstance(timeout, timedelta)
             if use_mcr_dl:
                 if dist_backend == 'nccl':
-                    print("Calling NcclBackend0")
                     if int(os.getenv('RANK', '0')) == 0:
-                        utils.logger.info('Initializing NcclBackend in MCR-DL')
-                    cdb = NcclBackend()
+                        utils.logger.info('Initializing NCCLBackend in MCR-DL')
+                    cdb = NCCLBackend()
                 elif dist_backend == 'mpi' :
                     assert True, "Pure MPIBackend is not supported."
                     if int(os.getenv('RANK', '0')) == 0:
