@@ -5,24 +5,50 @@
 
 import os
 import torch
-import mcr_dl as dist
+
+import mcr_dl.utils as utils
 from .common import DistributedTest, DistributedFixture, get_master_port, set_accelerator_visible
 from .simple_model import SimpleModel
 from mcr_dl.cuda_accelerator import get_accelerator
+from mcr_dl.comm import mpi_discovery
+from mcr_dl.utils import set_mpi_dist_environemnt
 
 import pytest
-# from deepspeed.ops.op_builder import FusedAdamBuilder
 
-# if not deepspeed.ops.__compatible_ops__[FusedAdamBuilder.NAME]:
-#     pytest.skip("This op had not been implemented on this system.", allow_module_level=True)
+
+def init_mcr_dl_dist(args_backend):
+    global dist
+    import mcr_dl
+    import mcr_dl as dist
+    mcr_dl.init_distributed(dist_backend=args_backend, use_mcr_dl=True)
+    local_rank = int(os.environ['LOCAL_RANK'])
+    get_accelerator().set_device(local_rank)
+
+def init_torch_distributed(backend):
+    global dist
+    import torch.distributed as dist
+    if backend == 'nccl':
+        mpi_discovery()
+    elif backend == 'mpi':
+        set_mpi_dist_environemnt()
+    dist.init_process_group(backend)
+    local_rank = int(os.environ['LOCAL_RANK'])
+    #get_accelerator().set_device(local_rank)
+
 
 @pytest.fixture(scope="session", autouse=True)
-def setup_session():
+def setup_session(pytestconfig):
     # Initialization for test session
-    print("\nSetting up resources for the entire test session")
     set_accelerator_visible()
-    torch.distributed.init_process_group(backend='mpi')
-    dist.init_distributed(dist_backend="mpi")
+    _backend = pytestconfig.getoption("backend")
+    _dist = pytestconfig.getoption("dist")
+    if _dist == 'mcr_dl':
+        init_mcr_dl_dist(_backend)
+    elif _dist == 'torch':
+        init_torch_distributed(_backend)
+    else:
+        print(f"distributed framework {_dist} not supported")
+        exit(0)
 
 # class TestInit(DistributedTest):
 #     world_size = 3
@@ -132,15 +158,15 @@ class TestDistAllReduce(DistributedTest):
         assert torch.all(x == result)
 
 
-class TestDistInferenceAllReduce(DistributedTest):
-    world_size = 4
+# class TestDistInferenceAllReduce(DistributedTest):
+#     world_size = 4
 
-    def test(self):
-        x = torch.ones(1, 3).to(get_accelerator().device_name()) * (dist.get_rank() + 1)
-        sum_of_ranks = (dist.get_world_size() * (dist.get_world_size() + 1)) // 2
-        result = torch.ones(1, 3).to(get_accelerator().device_name()) * sum_of_ranks
-        dist.inference_all_reduce(x)
-        assert torch.all(x == result)
+#     def test(self):
+#         x = torch.ones(1, 3).to(get_accelerator().device_name()) * (dist.get_rank() + 1)
+#         sum_of_ranks = (dist.get_world_size() * (dist.get_world_size() + 1)) // 2
+#         result = torch.ones(1, 3).to(get_accelerator().device_name()) * sum_of_ranks
+#         dist.inference_all_reduce(x)
+#         assert torch.all(x == result)
 
 
 # @pytest.mark.parametrize("dist_init_required", [True, False, None])

@@ -70,7 +70,7 @@ class CUDA_Accelerator():
         return self._communication_backend_name
 
     def op_builder_dir(self):
-        return "mcr_dl.op_builder"
+        return "mcr_dl.ops.op_builder"
 
     # dict that holds class name <--> class type mapping i.e.
     # 'AsyncIOBuilder': <class 'op_builder.async_io.AsyncIOBuilder'>
@@ -108,6 +108,10 @@ class CUDA_Accelerator():
             return self.class_dict[class_name]()
         else:
             return None
+
+    def build_extension(self):
+        from torch.utils.cpp_extension import BuildExtension
+        return BuildExtension
 
 ds_accelerator = None
 

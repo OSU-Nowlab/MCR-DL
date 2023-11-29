@@ -3,22 +3,22 @@
 
 # DeepSpeed Team
 """
-    DeepSpeed Communication Package: deepspeed.comm
-    deepspeed.comm
-        -- import and use deepspeed.ops.comm
+    MCR-DL Communication Package: mcr_dl
+    mcr_dl
+        -- import and use mcr_dl
         -- use torch.distributed directly if both this package and torch.distributed use the same NCCL version
         -- use custom collectives
-            -- can either use torch.dist or ds.ops.comm?
+            -- can either use torch.dist or mcr_dl.ops.comm?
         Note: the old 1-bit compressed allreduce variants that resided in deepspeed.runtime.comm will be moved here as well.
-    deepspeed.comm API
+    mcr_dl API
         -- must be kept fully compatible (same signatures) as torch.dist API to ensure backward/cross-framework compatibility.
         -- e.g. if a client code used
-            from deepspeed import comm as dist
+            import mcr_dl as dist
             instead of
             import torch.distributed as dist
             The code should work without breaking any of the public torch.distributed functionality
     Future:
-        -- deepspeed groups API should be brought into ds.comm
+        -- mcr_dl groups API should be brought into ds.comm
 """
 
 import torch
@@ -29,7 +29,8 @@ from .constants import *
 from .reduce_op import *
 from .cuda_accelerator import get_accelerator
 from .ccl import CCLBackend
-
+from .nccl import NCCLBackend
+from .mpi import MPIBackend
 from mcr_dl.utils.comms_logging import CommsLogger
 from mcr_dl.utils import timer, get_caller_func
 from .torch import TorchBackend
@@ -610,7 +611,8 @@ def init_distributed(dist_backend=None,
                      dist_init_required=None,
                      config=None,
                      rank=-1,
-                     world_size=-1):
+                     world_size=-1,
+                     use_mcr_dl=False):
     ''' Initialize dist backend, potentially performing MPI discovery if needed
 
     Arguments:
@@ -635,11 +637,11 @@ def init_distributed(dist_backend=None,
         init_mcr_dl_backend(get_accelerator().communication_backend_name(), timeout, init_method)
         set_backend()
         utils.logger.info(f'cdb={cdb}')
+
     if cdb is None and torch.distributed.is_initialized():
         # The user initialized torch.dist themselves, create cdb and short-circuit
         cdb = TorchBackend(dist_backend, timeout, init_method)
         return
-
     if dist_init_required is False:
         assert (
             cdb is not None and cdb.is_initialized() is True
@@ -656,18 +658,28 @@ def init_distributed(dist_backend=None,
                 patch_aws_sm_env_for_torch_nccl_backend(verbose=verbose)
             else:
                 mpi_discovery(distributed_port=distributed_port, verbose=verbose)
-
         if cdb is not None and cdb.is_initialized():
             if int(os.getenv('RANK', '0')) == 0:
                 utils.logger.info('Distributed backend already initialized')
         else:
             assert isinstance(timeout, timedelta)
-            if dist_backend is None:
-                dist_backend = get_accelerator().communication_backend_name()
-            if int(os.getenv('RANK', '0')) == 0:
-                utils.logger.info('Initializing TorchBackend in MCR-DL with backend {}'.format(dist_backend))
-            # Create a torch backend object, initialize torch distributed, and assign to cdb
-            cdb = TorchBackend(dist_backend, timeout, init_method, rank, world_size)
+            if use_mcr_dl:
+                if dist_backend == 'nccl':
+                    if int(os.getenv('RANK', '0')) == 0:
+                        utils.logger.info('Initializing NCCLBackend in MCR-DL')
+                    cdb = NCCLBackend()
+                elif dist_backend == 'mpi' :
+                    assert True, "Pure MPIBackend is not supported."
+                    if int(os.getenv('RANK', '0')) == 0:
+                        utils.logger.info('Initializing MPIBackend in MCR-DL')
+                    cdb = MPIBackend()
+            else:
+                # Create a torch backend object, initialize torch distributed, and assign to cdb
+                if int(os.getenv('RANK', '0')) == 0:
+                    utils.logger.info(
+                        'Initializing TorchBackend in MCR-DL with backend {}'.format(
+                            dist_backend))
+                cdb = TorchBackend(dist_backend, timeout, init_method)
 
 
 def mpi_discovery(distributed_port=TORCH_DISTRIBUTED_DEFAULT_PORT, verbose=True):
