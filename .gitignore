@@ -1,7 +1,3 @@
 __pycache__
 mcr_dl/git_version_info_installed.py
-build/
-dist/
-*.so
 mcr_dl.egg-info/
-build.txt
