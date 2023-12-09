@@ -50,7 +50,7 @@ class MPIBackend(Backend):
             # Future functionality to support ds.initialize() on a single GPU
             self.single_gpu_mode = True
         else:
-            self.mpi_comm_op.initialize(self.rank, self.size)
+            self.mpi_comm_op.initialize()
             self.initialized = True
             self.single_gpu_mode = False
 

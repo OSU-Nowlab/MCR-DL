@@ -44,7 +44,7 @@ def all_reduce():
 
 if __name__ == "__main__":
     set_accelerator_visible()
-    init_processes(args_dist='mcr_dl', args_backend='nccl')
+    init_processes(args_dist='mcr_dl', args_backend='mpi')
     all_reduce()
 
 

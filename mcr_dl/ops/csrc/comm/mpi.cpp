@@ -155,17 +155,19 @@ size_t irecv(torch::Tensor data, int rank, int tag, int comm = 0)
     return casted_req;
 }
 
-void allreduce(torch::Tensor data, int comm, bool is_prof)
+void allreduce(torch::Tensor data, py::object comm, bool is_prof)
 {
     std::chrono::steady_clock::time_point begin, end;
     torch::Tensor recvbuf = torch::empty_like(data);
+    int comm_val = py::int_(comm.attr("value"));
+
     if (is_prof) { begin = std::chrono::steady_clock::now(); }
     MPICHECK(MPI_Allreduce(MPI_IN_PLACE,
                            data.data_ptr(),
                            data.numel(),
                            get_mpi_datatype(data.scalar_type()),
                            MPI_SUM,
-                           global_mpi_comms[comm]));
+                           global_mpi_comms[comm_val]));
     if (is_prof) {
         end = std::chrono::steady_clock::now();
         if (get_rank() == 0) {
