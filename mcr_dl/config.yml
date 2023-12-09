@@ -1,0 +1,11 @@
+mpi:
+  path: 'installation/path/of/mpi'
+  include: 'installation/path/of/mpi/include'
+
+cuda:
+  path: '/installation/path/of/cuda'
+  include: '/installation/path/of/cuda/include'
+
+nccl:
+  path: '/installation/path/of/nccl/build'
+  include: '/installation/path/of/nccl/build/include'

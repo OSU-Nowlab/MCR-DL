@@ -4,6 +4,7 @@
 # DeepSpeed Team
 
 import os
+import pytest
 import torch
 
 import mcr_dl.utils as utils
@@ -12,9 +13,6 @@ from .simple_model import SimpleModel
 from mcr_dl.cuda_accelerator import get_accelerator
 from mcr_dl.comm import mpi_discovery
 from mcr_dl.utils import set_mpi_dist_environemnt
-
-import pytest
-
 
 def init_mcr_dl_dist(args_backend):
     global dist

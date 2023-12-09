@@ -1,6 +1,5 @@
-import torch
 from mcr_dl.ops import op_builder
-from mcr_dl.utils import logger
+
 nccl_cpp_module = None
 
 

@@ -2,18 +2,13 @@
 Copyright 2021 The Microsoft DeepSpeed Team
 '''
 
-import torch
-import time
-import numpy as np
-
 from mcr_dl.ops.comm.nccl import build_nccl_op
 from mcr_dl.ops.comm.mpi import build_mpi_op
+from mcr_dl.utils import logger
 
 from .utils import *
 from .backend import *
-
 from .comm import ReduceOp
-from mcr_dl.utils import logger
 
 cupy = None
 

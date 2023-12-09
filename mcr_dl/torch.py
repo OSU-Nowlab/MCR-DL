@@ -3,12 +3,13 @@
 
 # DeepSpeed Team
 
+import os
+
 from mcr_dl import utils
 
 from .utils import *
 from .backend import *
 from .comm import *
-import os
 
 DS_COMM_ALL_GATHER_OFF = False
 DS_COMM_REDUCE_SCATTER_OFF = False
