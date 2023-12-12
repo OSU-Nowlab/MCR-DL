@@ -1,3 +1,4 @@
 __pycache__
 mcr_dl/git_version_info_installed.py
 mcr_dl.egg-info/
+mcr_dl/config.yml
