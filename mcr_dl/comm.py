@@ -210,9 +210,9 @@ def set_backend():
 
 
 @timed_op
-def broadcast(tensor, src, group=None, async_op=False, prof=False, log_name='broadcast', debug=get_caller_func()):
+def broadcast(tensor, src, op=ReduceOp.SUM, group=None, async_op=False, prof=False, log_name='broadcast', debug=get_caller_func()):
     global cdb
-    return cdb.broadcast(tensor=tensor, src=src, group=group, async_op=async_op)
+    return cdb.broadcast(tensor=tensor, src=src, op=op, group=group, async_op=async_op)
 
 
 @timed_op
@@ -323,6 +323,7 @@ def all_to_all_single(output,
                       tensor,
                       output_split_sizes=None,
                       input_split_sizes=None,
+                      op=ReduceOp.SUM,
                       group=None,
                       async_op=False,
                       prof=False,
@@ -333,6 +334,7 @@ def all_to_all_single(output,
                                  input=tensor,
                                  output_split_sizes=output_split_sizes,
                                  input_split_sizes=input_split_sizes,
+                                 op=op,
                                  group=group,
                                  async_op=async_op)
 

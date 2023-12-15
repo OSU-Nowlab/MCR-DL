@@ -179,15 +179,14 @@ void allreduce(torch::Tensor data, py::object comm, bool is_prof)
     }
 }
 
-void allgather(torch::Tensor data, int comm = 0)
+void allgather(torch::Tensor outputTensor, torch::Tensor inputTensor, int comm = 0)
 {
-    torch::Tensor recvbuf = torch::empty_like(data);
-    MPICHECK(MPI_Allgather(data.data_ptr(),
-                           data.numel(),
-                           get_mpi_datatype(data.scalar_type()),
-                           recvbuf.data_ptr(),
-                           data.numel(),
-                           get_mpi_datatype(data.scalar_type()),
+    MPICHECK(MPI_Allgather(inputTensor.data_ptr(),
+                           inputTensor.numel() / get_world_size(0),
+                           get_mpi_datatype(inputTensor.scalar_type()),
+                           outputTensor.data_ptr(),
+                           outputTensor.numel() / get_world_size(0),
+                           get_mpi_datatype(outputTensor.scalar_type()),
                            global_mpi_comms[comm]));
 }
 
@@ -240,18 +239,22 @@ void reduce(torch::Tensor data, int root_rank, int comm = 0)
                         global_mpi_comms[comm]));
 }
 
-void bcast(torch::Tensor data, int root_rank, int comm = 0)
+void bcast(torch::Tensor data, int root_rank, py::object comm)
 {
+    int comm_val = py::int_(comm.attr("value"));
+
     MPICHECK(MPI_Bcast(data.data_ptr(),
                        data.numel(),
                        get_mpi_datatype(data.scalar_type()),
                        root_rank,
-                       global_mpi_comms[comm]));
+                       global_mpi_comms[comm_val]));
 }
 
-void alltoall(torch::Tensor outputTensor, torch::Tensor inputTensor, int comm, bool is_prof)
+void alltoall(torch::Tensor outputTensor, torch::Tensor inputTensor, py::object comm, bool is_prof)
 {
     std::chrono::steady_clock::time_point begin, end;
+    int comm_val = py::int_(comm.attr("value"));
+
     if (is_prof) { begin = std::chrono::steady_clock::now(); }
     MPICHECK(MPI_Alltoall(inputTensor.data_ptr(),
                           inputTensor.numel() / get_world_size(0),
@@ -259,7 +262,7 @@ void alltoall(torch::Tensor outputTensor, torch::Tensor inputTensor, int comm, b
                           outputTensor.data_ptr(),
                           outputTensor.numel() / get_world_size(0),
                           get_mpi_datatype(outputTensor.scalar_type()),
-                          global_mpi_comms[comm]));
+                          global_mpi_comms[comm_val]));
     if (is_prof) {
         end = std::chrono::steady_clock::now();
         if (get_rank(0) == 0) {

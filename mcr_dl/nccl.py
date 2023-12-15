@@ -36,6 +36,9 @@ class NCCLBackend(Backend):
             self.mpu = mpu
             #self.world_group = self.mpu.get_data_parallel_group()
 
+    def has_all_gather_into_tensor(self):
+        return self.all_gather_base is not None
+
     def init_process_group(self):
         logger.info(
             f"Initializing MCR-DL's {self.name} Communication Backend with rank = {self.rank} and size = {self.size}"
@@ -77,10 +80,10 @@ class NCCLBackend(Backend):
     def get_world_group(self):
         return self.nccl_comm_op.get_world_group()
 
-    def barrier(self):
+    def barrier(self, group=None, async_op=False):
         self.mpi_comm_op.barrier()
 
-    def broadcast(self, tensor, src, group=None, async_op=False, block=False):
+    def broadcast(self, tensor, src, op=ReduceOp.SUM, group=None, async_op=False, block=False):
         # TODO: Fix calls to op. Fix op to support groups and async
         self.nccl_comm_op.broadcast(tensor,
                                     src,
@@ -135,11 +138,18 @@ class NCCLBackend(Backend):
                                           group,
                                           async_op)
 
+    def all_gather_into_tensor(self, output_tensor, input_tensor, group=None, async_op=False, block=False):
+        self.nccl_comm_op.all_gather_base(output_tensor,
+                                          input_tensor,
+                                          block,
+                                          group,
+                                          async_op)
     def all_to_all_single(self,
                           output,
                           input,
                           output_split_sizes=None,
                           input_split_sizes=None,
+                          op=ReduceOp.SUM,
                           group=None,
                           async_op=False,
                           block=False):
