@@ -37,7 +37,7 @@ def init_torch_distributed(backend):
     local_rank = int(os.environ['LOCAL_RANK'])
     get_accelerator().set_device(local_rank)
 
-def init_deepspeed_comm(backend):
+def init_mcr_dl_comm(backend):
     global dist
     import mcr_dl as dist
     dist.init_distributed(dist_backend=backend, use_mcr_dl=True)
@@ -47,7 +47,7 @@ def init_deepspeed_comm(backend):
 
 def init_processes(local_rank, args):
     if args.dist == 'mcr_dl':
-        init_deepspeed_comm(args.backend)
+        init_mcr_dl_comm(args.backend)
     elif args.dist == 'torch':
         init_torch_distributed(args.backend)
     else:
