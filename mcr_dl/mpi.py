@@ -4,16 +4,13 @@ Copyright 2021 The Microsoft DeepSpeed Team
 
 import torch
 import torch.distributed as dist
-import time
-import numpy as np
 
 from mcr_dl.ops.comm.mpi import build_mpi_op
+from mcr_dl.utils import logger
 
 from .utils import *
 from .backend import *
-
 from .comm import ReduceOp
-from mcr_dl.utils import logger
 
 cupy = None
 
@@ -40,6 +37,9 @@ class MPIBackend(Backend):
             self.mpu = mpu
             #self.world_group = self.mpu.get_data_parallel_group()
 
+    def has_all_gather_into_tensor(self):
+        return self.all_gather_base is not None
+
     def init_process_group(self):
         logger.info(
             f"Initializing MCR-DL's {self.name} Communication Backend with rank = {self.rank} and size = {self.size}"
@@ -50,7 +50,7 @@ class MPIBackend(Backend):
             # Future functionality to support ds.initialize() on a single GPU
             self.single_gpu_mode = True
         else:
-            self.mpi_comm_op.initialize(self.rank, self.size)
+            self.mpi_comm_op.initialize()
             self.initialized = True
             self.single_gpu_mode = False
 
@@ -74,12 +74,12 @@ class MPIBackend(Backend):
     def is_initialized(self):
         return self.initialized
 
-    def barrier(self):
+    def barrier(self, group=None, async_op=False):
         return self.mpi_comm_op.barrier()
 
-    def broadcast(self, tensor, src, group=None, async_op=False):
+    def broadcast(self, tensor, src, op=ReduceOp.SUM, group=None, async_op=False):
         # TODO: Fix calls to op. Fix op to support groups and async
-        return self.mpi_comm_op.bcast(tensor, src)  #, group=group, async_op=async_op)
+        self.mpi_comm_op.bcast(tensor, src, op)  #, group=group, async_op=async_op)
 
     def send(self, tensor, dst, group=None, tag=0):
         self.mpi_comm_op.send(tensor, dst, tag)
@@ -107,14 +107,18 @@ class MPIBackend(Backend):
     def all_gather_base(self, output_tensor, input_tensor, group=None, async_op=False):
         self.mpi_comm_op.allgather(output_tensor, input_tensor, async_op)
 
+    def all_gather_into_tensor(self, output_tensor, input_tensor, group=None, async_op=False):
+        self.mpi_comm_op.allgather(output_tensor, input_tensor, async_op)
+
     def all_to_all_single(self,
                           output,
                           input,
                           output_split_sizes=None,
                           input_split_sizes=None,
+                          op=ReduceOp.SUM,
                           group=None,
                           async_op=False):
-        self.mpi_comm_op.alltoall(output, input, async_op)
+        self.mpi_comm_op.alltoall(output, input, op, async_op)
 
     def all_to_all(self,
                    output_tensor_list,

@@ -64,7 +64,12 @@ class CUDA_Accelerator():
     def synchronize(self, device_index=None):
         return torch.cuda.synchronize(device_index)
 
+    # Memory management
+    def empty_cache(self):
+        return torch.cuda.empty_cache()
 
+    def total_memory(self, device_index=None):
+        return torch.cuda.get_device_properties(device_index).total_memory
 
     def communication_backend_name(self):
         return self._communication_backend_name

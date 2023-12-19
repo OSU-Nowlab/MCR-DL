@@ -1,20 +1,17 @@
-import torch
 from .builder import CUDAOpBuilder
+from .config import ConfigPath
 
-MV2 = f'/opt/mvapich2/gdr/2.3.6/no-mpittool/no-openacc/cuda11.3/mofed5.4/mpirun/gnu9.3.0'
-# OMPI = f'/usr/local/mpi'
-# OMPI = f'/home/gulhane.2/opt/openmpi'
-OMPI = f'/home/gulhane.2/mvapich2-installation/nvidia/gdr2.3.7_cuda11.6_gcc10.3.0'
-
-MPI_INCL = OMPI + '/include'
+config = ConfigPath()
+OMPI = config.mpi_path
+MPI_INCL = config.mpi_include
 MPI_LIB = '-L' + OMPI + '/lib -lmpi'
 
-CUDA = '/usr/local/cuda'
-CUDA_INCL = CUDA + '/include'
+CUDA = config.cuda_path
+CUDA_INCL = config.cuda_include
 CUDA_LIB = '-L' + CUDA + '/lib64 -lm -lcuda -lcudart'
 
-NCCL = '/home/gulhane.2/MCR_DL/nccl/build'
-NCCL_INCL = NCCL + '/include'
+NCCL = config.nccl_path
+NCCL_INCL = config.nccl_include
 
 class NCCLCommBuilder(CUDAOpBuilder):
     BUILD_VAR = "DS_BUILD_NCCL_COMM"

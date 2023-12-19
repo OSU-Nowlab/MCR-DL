@@ -23,20 +23,19 @@
 
 import torch
 import os
+from datetime import timedelta
+
+from mcr_dl import utils
+from mcr_dl.utils.comms_logging import CommsLogger
+from mcr_dl.utils import timer, get_caller_func
 
 from .constants import TORCH_DISTRIBUTED_DEFAULT_PORT, default_pg_timeout
 from .constants import *
 from .reduce_op import *
 from .cuda_accelerator import get_accelerator
-from .ccl import CCLBackend
 from .nccl import NCCLBackend
 from .mpi import MPIBackend
-from mcr_dl.utils.comms_logging import CommsLogger
-from mcr_dl.utils import timer, get_caller_func
 from .torch import TorchBackend
-
-from mcr_dl import utils
-from datetime import timedelta
 
 # Current mcr-dl backend (cdb) global object for simple access by client code
 cdb = None
@@ -63,7 +62,6 @@ class ProcessGroup():
         self.ranks = ranks
         self.comm_id = comm_id
         self.size = len(ranks)
-
 
 def _configure_using_config_file(config):
     if config.comms_logger_enabled:
@@ -96,7 +94,6 @@ def configure(
 
     if debug is not None:
         comms_logger.debug = debug
-
 
 # Logging wrapper for timing ops
 def timed_op(func):
@@ -155,13 +152,6 @@ def init_mcr_dl_backend(ds_backend, timeout, init_method):
         utils.logger.debug("NCCL backend in MCR-DL not yet implemented")
     elif ds_backend == MPI_BACKEND:
         utils.logger.debug("MPI backend in MCR-DL not yet implemented")
-    elif ds_backend == GLOO_BACKEND:
-        utils.logger.debug("Gloo backend in MCR-DL not yet implemented")
-    elif ds_backend == CCL_BACKEND:
-        ccl_backend = CCLBackend(rank=rank, world_size=size, timeout=timeout, init_method=init_method)
-        utils.logger.info(f"Initialize {ds_backend} backend")
-    elif ds_backend == HCCL_BACKEND:
-        utils.logger.warn("HCCL backend in MCR-DL not yet implemented")
     else:
         utils.logger.debug(f"MCR-DL does not support {ds_backend} backend")
 
@@ -220,9 +210,9 @@ def set_backend():
 
 
 @timed_op
-def broadcast(tensor, src, group=None, async_op=False, prof=False, log_name='broadcast', debug=get_caller_func()):
+def broadcast(tensor, src, op=ReduceOp.SUM, group=None, async_op=False, prof=False, log_name='broadcast', debug=get_caller_func()):
     global cdb
-    return cdb.broadcast(tensor=tensor, src=src, group=group, async_op=async_op)
+    return cdb.broadcast(tensor=tensor, src=src, op=op, group=group, async_op=async_op)
 
 
 @timed_op
@@ -333,6 +323,7 @@ def all_to_all_single(output,
                       tensor,
                       output_split_sizes=None,
                       input_split_sizes=None,
+                      op=ReduceOp.SUM,
                       group=None,
                       async_op=False,
                       prof=False,
@@ -343,6 +334,7 @@ def all_to_all_single(output,
                                  input=tensor,
                                  output_split_sizes=output_split_sizes,
                                  input_split_sizes=input_split_sizes,
+                                 op=op,
                                  group=group,
                                  async_op=async_op)
 

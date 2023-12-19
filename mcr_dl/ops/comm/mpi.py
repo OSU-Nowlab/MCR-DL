@@ -1,4 +1,3 @@
-import torch
 from mcr_dl.ops import op_builder
 
 mpi_cpp_module = None

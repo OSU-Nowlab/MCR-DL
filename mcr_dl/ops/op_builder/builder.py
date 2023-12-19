@@ -18,7 +18,6 @@ import distutils.sysconfig
 from distutils.errors import CompileError, LinkError
 from abc import ABC, abstractmethod
 from typing import List
-from mcr_dl.utils import logger #TBRemoved
 
 YELLOW = '\033[93m'
 END = '\033[0m'
