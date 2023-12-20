@@ -187,7 +187,7 @@ def benchmark_parser():
     parser.add_argument("--backend",
                         type=str,
                         default=DEFAULT_BACKEND,
-                        choices=['nccl', 'ccl', 'mpi'],
+                        choices=['nccl', 'mpi'],
                         help='Communication library to use')
     parser.add_argument("--dist",
                         type=str,

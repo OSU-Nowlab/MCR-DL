@@ -14,7 +14,7 @@ from constants import *
 from mcr_dl.cuda_accelerator import get_accelerator
 
 
-def timed_all_to_all(input, output, args):
+def timed_all_to_all(input, output, start_event, end_event, args):
     if args.dist == 'torch':
         import torch.distributed as dist
     elif args.dist == 'mcr_dl':
