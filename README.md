@@ -16,19 +16,21 @@ The initial release of MCR-DL doesn't allow for mixed-backend optimizations. It 
 - Python 3.8 or later (for Linux, Python 3.8.1+ is needed).
 - Any MPI library (we recommend MVAPICH2-GDR), NCCL, or both </br>
 Refer [MVAPICH2-GDR user guide](https://mvapich.cse.ohio-state.edu/userguide/gdr/) to install MVAPICH2-GDR.
-- PyTorch </br>
-Refer [PyTorch installation guide](/docs/installation/PYTORCH_INSTALLATION_GUIDE.md) to install PyTorch from source and configure MVAPICH2 support. 
+- PyTorch 1.12.1 or later </br>
+Refer [PyTorch installation guide](/docs/installation/PYTORCH_INSTALLATION_GUIDE.md) to install PyTorch from source and configure MVAPICH2 support.
 
 *Note:
 We used the following versions during implementation and testing.
-Python=3.9.16, cuda=11.6, gcc=10.3.0, cmake=3.22.2, PyTorch=1.12.1, MVAPICH2-GDR=2.3.7*
+Python=3.9.16, cuda=11.7, gcc=10.3.0, cmake=3.22.2, PyTorch=2.0.1, MVAPICH2-GDR=2.3.7*
 
 ### Install MCR-DL
 ```bash
-cd mcr_dl
+cd MCR-DL
 python setup.py install
 ```
 
+### Update Configurations
+Update mpi, cuda, and nccl paths appropriately in [mcr_dl/config.yml](/mcr_dl/config.yml)
 
 ### The MCR-DL Communication Benchmarking Suite
 
