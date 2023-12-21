@@ -17,7 +17,7 @@ The initial release of MCR-DL doesn't allow for mixed-backend optimizations. It 
 - Any MPI library (we recommend MVAPICH2-GDR), NCCL, or both </br>
 Refer [MVAPICH2-GDR user guide](https://mvapich.cse.ohio-state.edu/userguide/gdr/) to install MVAPICH2-GDR.
 - PyTorch 1.12.1 or later </br>
-Refer [PyTorch installation guide](/docs/installation/PYTORCH_INSTALLATION_GUIDE.md) to install PyTorch from source and configure MVAPICH2 support.
+Refer [PyTorch installation guide](/docs/installation/PYTORCH_INSTALLATION_GUIDE.md) to install PyTorch from source and configure MVAPICH2-GDR support.
 
 *Note:
 We used the following versions during implementation and testing.
