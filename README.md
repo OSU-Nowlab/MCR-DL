@@ -3,7 +3,7 @@
 MCR-DL is a [HiDL](https://hidl.cse.ohio-state.edu/) project. We encourage you to visit the [HiDL website](https://hidl.cse.ohio-state.edu/) for additional information, the latest performance numbers, and similar projects on high-performance machine and deep learning. For the latest announcements on HiDL projects, [register for the HiDL mailing list](https://hidl.cse.ohio-state.edu/mailinglists/).
 
 # News
-**[12/XXX/2023]** The initial release of MCR-DL! For now, we only support basic single-backend communication without going through the PyTorch distributed module. For a full list of new and existing features, please see [the MCR-DL feature page](http://hidl.cse.ohio-state.edu/features/#MCR-DL)
+**[12/24/2023]** The initial release of MCR-DL! For now, we only support basic single-backend communication without going through the PyTorch distributed module. For a full list of new and existing features, please see [the MCR-DL feature page](http://hidl.cse.ohio-state.edu/features/#MCR-DL)
 
 # MCR-DL v0.1
 
