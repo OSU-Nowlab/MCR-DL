@@ -3,7 +3,7 @@
 MCR-DL is a [HiDL](https://hidl.cse.ohio-state.edu/) project. We encourage you to visit the [HiDL website](https://hidl.cse.ohio-state.edu/) for additional information, the latest performance numbers, and similar projects on high-performance machine and deep learning. For the latest announcements on HiDL projects, [register for the HiDL mailing list](https://hidl.cse.ohio-state.edu/mailinglists/).
 
 # News
-**[12/XXX/2023]** The initial release of MCR-DL! For now, we only support basic single-backend communication without going through the PyTorch distributed module. For a full list of new and existing features, please see [the MCR-DL feature page](http://hidl.cse.ohio-state.edu/features/#MCR-DL)
+**[12/24/2023]** The initial release of MCR-DL! For now, we only support basic single-backend communication without going through the PyTorch distributed module. For a full list of new and existing features, please see [the MCR-DL feature page](http://hidl.cse.ohio-state.edu/features/#MCR-DL)
 
 # MCR-DL v0.1
 
@@ -17,7 +17,7 @@ The initial release of MCR-DL doesn't allow for mixed-backend optimizations. It 
 - Any MPI library (we recommend MVAPICH2-GDR), NCCL, or both </br>
 Refer [MVAPICH2-GDR user guide](https://mvapich.cse.ohio-state.edu/userguide/gdr/) to install MVAPICH2-GDR.
 - PyTorch 1.12.1 or later </br>
-Refer [PyTorch installation guide](/docs/installation/PYTORCH_INSTALLATION_GUIDE.md) to install PyTorch from source and configure MVAPICH2 support.
+Refer [PyTorch installation guide](/docs/installation/PYTORCH_INSTALLATION_GUIDE.md) to install PyTorch from source and configure MVAPICH2-GDR support.
 
 *Note:
 We used the following versions during implementation and testing.
