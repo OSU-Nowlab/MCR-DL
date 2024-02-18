@@ -30,7 +30,7 @@ python setup.py install
 ```
 
 ### Update Configurations
-Update mpi, cuda, and nccl paths appropriately in [mcr_dl/config.yml](/mcr_dl/config.yml)
+Update mpi, cuda, and nccl paths appropriately in [mcr_dl/config.yml](/mcr_dl/build_config.yml)
 
 ### The MCR-DL Communication Benchmarking Suite
 
