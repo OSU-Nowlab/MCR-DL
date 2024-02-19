@@ -1,11 +1,11 @@
 mpi:
-  path: '/home/gulhane.2/mvapich2-installation/nvidia/master_plus_cuda_11.7_gcc_10.3.0_new'
-  include: '/home/gulhane.2/mvapich2-installation/nvidia/master_plus_cuda_11.7_gcc_10.3.0_new/include'
+  path: '/path/to/mpi'
+  include: '/path/to/mpi/include'
 
 cuda:
-  path: '/usr/local/cuda'
-  include: '/usr/local/cuda/include'
+  path: '/path/to/cuda'
+  include: '/path/to/cudainclude'
 
 nccl:
-  path: '/home/gulhane.2/MCR_DL/nccl/build'
-  include: '/home/gulhane.2/MCR_DL/nccl/build/include'
+  path: '/path/to/nccl/build'
+  include: '/path/to/nccl/include'

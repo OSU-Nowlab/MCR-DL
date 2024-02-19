@@ -22,8 +22,7 @@ import mcr_dl
 
 class ConfigPath():
     def __init__(self, file_path = None):
-        self.file_path = os.path.join(os.path.dirname(mcr_dl.__file__), "config.yml") if file_path is None else file_path
-        print(self.file_path)
+        self.file_path = os.path.join(os.path.dirname(mcr_dl.__file__), "build_config.yml") if file_path is None else file_path
         self.config_data = self.load_config()
         self.mpi_path = self.config_data.get("mpi", {}).get("path")
         self.mpi_include = self.config_data.get("mpi", {}).get("include")
