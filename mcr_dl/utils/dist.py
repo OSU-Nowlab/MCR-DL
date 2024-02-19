@@ -156,12 +156,12 @@ def set_mpi_dist_environemnt(master_addr = None):
     if master_addr is not None:
         os.environ['MASTER_ADDR'] = master_addr
     local_rank = env2int(
-        ['LOCAL_RANK', 'MPI_LOCALRANKID', 'OMPI_COMM_WORLD_LOCAL_RANK', 'MV2_COMM_WORLD_LOCAL_RANK', 'SLURM_LOCALID'])
+        ['LOCAL_RANK', 'MPI_LOCALRANKID', 'OMPI_COMM_WORLD_LOCAL_RANK', 'MV2_COMM_WORLD_LOCAL_RANK', 'SLURM_LOCALID', 'MVP_COMM_WORLD_LOCAL_RANK'])
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = str(local_rank)
-    rank = env2int(['RANK', 'MPI_RANKID', 'OMPI_COMM_WORLD_RANK', 'MV2_COMM_WORLD_RANK', 'SLURM_PROCID'])
+    rank = env2int(['RANK', 'MPI_RANKID', 'OMPI_COMM_WORLD_RANK', 'MV2_COMM_WORLD_RANK', 'SLURM_PROCID', 'MVP_COMM_WORLD_LOCAL_RANK'])
     if 'RANK' not in os.environ:
         os.environ['RANK'] = str(rank)
-    world_size = env2int(['WORLD_SIZE', 'OMPI_COMM_WORLD_SIZE', 'MV2_COMM_WORLD_SIZE', 'SLURM_NPROCS'])
+    world_size = env2int(['WORLD_SIZE', 'OMPI_COMM_WORLD_SIZE', 'MV2_COMM_WORLD_SIZE', 'SLURM_NPROCS', 'MVP_COMM_WORLD_LOCAL_RANK'])
     if 'WORLD_SIZE' not in os.environ:
         os.environ['WORLD_SIZE'] = str(world_size)
