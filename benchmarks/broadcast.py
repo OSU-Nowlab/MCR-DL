@@ -28,10 +28,7 @@ from mcr_dl.cuda_accelerator import get_accelerator
 
 
 def timed_broadcast(input, start_event, end_event, args):
-    if args.dist == 'torch':
-        import torch.distributed as dist
-    elif args.dist == 'mcr_dl':
-        import mcr_dl as dist
+    dist = mcr_dl.get_distributed_engine()
 
     sync_all()
     # Warmups, establish connections, etc.
@@ -62,10 +59,7 @@ def timed_broadcast(input, start_event, end_event, args):
 
 
 def run_broadcast(local_rank, args):
-    if args.dist == 'torch':
-        import torch.distributed as dist
-    elif args.dist == 'mcr_dl':
-        import mcr_dl as dist
+    dist = mcr_dl.get_distributed_engine()
 
     # Prepare benchmark header
     print_header(args, 'broadcast')
@@ -125,5 +119,5 @@ def run_broadcast(local_rank, args):
 if __name__ == "__main__":
     args = benchmark_parser().parse_args()
     rank = args.local_rank
-    init_processes(local_rank=rank, args=args)
+    mcr_dl.init_processes(args.dist, args.backend)
     run_broadcast(local_rank=rank, args=args)
