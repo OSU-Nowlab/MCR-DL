@@ -18,3 +18,46 @@
 
 from .utils import *
 from .comm import *
+
+global __dist_engine
+global __dist_backend
+
+def init_torch_distributed(backend):
+    import torch.distributed as dist
+    if backend == 'nccl':
+        mpi_discovery()
+    elif backend == 'mpi':
+        set_mpi_dist_environemnt()
+    dist.init_process_group(backend)
+    local_rank = int(os.environ['LOCAL_RANK'])
+    get_accelerator().set_device(local_rank)
+
+def init_mcr_dl_comm(backend):
+    import mcr_dl
+    mcr_dl.init_distributed(dist_backend=backend, use_mcr_dl=True)
+    local_rank = int(os.environ['LOCAL_RANK'])
+    #get_accelerator().set_device(local_rank)
+
+def init_processes(dist_engine, dist_backend):
+    print(f'Comm : {dist_engine}  Backend : {dist_backend}')
+
+    global __dist_engine
+    global __dist_backend
+    __dist_engine = dist_engine
+    __dist_backend = dist_backend
+
+    if dist_engine == 'mcr_dl':
+        init_mcr_dl_comm(dist_backend)
+    elif dist_engine == 'torch':
+        init_torch_distributed(dist_backend)
+    else:
+        print(f"distributed framework {dist_engine} not supported")
+        exit(0)
+
+def get_distributed_engine():
+    global __dist_engine
+    if __dist_engine == 'torch':
+        return torch.distributed
+    elif __dist_engine == 'mcr_dl':
+        import mcr_dl
+        return mcr_dl

@@ -67,10 +67,7 @@ def timed_all_gather(input, output, start_event, end_event, args):
 
 
 def run_all_gather(local_rank, args):
-    if args.dist == 'torch':
-        import torch.distributed as dist
-    elif args.dist == 'mcr_dl':
-        import mcr_dl as dist
+    dist = mcr_dl.get_distributed_engine()
 
     # Prepare benchmark header
     print_header(args, 'all_gather')
@@ -98,6 +95,7 @@ def run_all_gather(local_rank, args):
                 # Delete original mat to avoid OOM
                 del mat
                 get_accelerator().empty_cache()
+                print(f"#######All gather world size : {world_size}")
                 output = torch.zeros(input.nelement() * world_size,
                                      dtype=getattr(torch, args.dtype)).to(get_accelerator().device_name(local_rank))
             except RuntimeError as e:
@@ -149,5 +147,5 @@ def run_all_gather(local_rank, args):
 if __name__ == "__main__":
     args = benchmark_parser().parse_args()
     rank = args.local_rank
-    init_processes(local_rank=rank, args=args)
+    mcr_dl.init_processes(args.dist, args.backend)
     run_all_gather(local_rank=rank, args=args)
