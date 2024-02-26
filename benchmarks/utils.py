@@ -28,9 +28,7 @@ from mcr_dl.constants import *
 from mcr_dl.cuda_accelerator import get_accelerator
 from mcr_dl.comm import mpi_discovery
 from mcr_dl.utils import set_mpi_dist_environemnt
-
-global dist
-
+import mcr_dl
 
 def env2int(env_list, default=-1):
     for e in env_list:
@@ -39,41 +37,14 @@ def env2int(env_list, default=-1):
     return default
 
 
-def init_torch_distributed(backend):
-    global dist
-    import torch.distributed as dist
-    if backend == 'nccl':
-        mpi_discovery()
-    elif backend == 'mpi':
-        set_mpi_dist_environemnt()
-    dist.init_process_group(backend)
-    local_rank = int(os.environ['LOCAL_RANK'])
-    get_accelerator().set_device(local_rank)
-
-def init_mcr_dl_comm(backend):
-    global dist
-    import mcr_dl as dist
-    dist.init_distributed(dist_backend=backend, use_mcr_dl=True)
-    local_rank = int(os.environ['LOCAL_RANK'])
-    get_accelerator().set_device(local_rank)
-
-
-def init_processes(local_rank, args):
-    if args.dist == 'mcr_dl':
-        init_mcr_dl_comm(args.backend)
-    elif args.dist == 'torch':
-        init_torch_distributed(args.backend)
-    else:
-        print_rank_0(f"distributed framework {args.dist} not supported")
-        exit(0)
-
-
 def print_rank_0(message):
+    dist = mcr_dl.get_distributed_engine()
     if dist.get_rank() == 0:
         print(message)
 
 
 def print_header(args, comm_op):
+    dist = mcr_dl.get_distributed_engine()
     if comm_op == 'pt2pt':
         world_size = 2
     else:
@@ -90,6 +61,7 @@ def print_header(args, comm_op):
 
 
 def get_bw(comm_op, size, duration, args):
+    dist = mcr_dl.get_distributed_engine()
     n = dist.get_world_size()
     tput = 0
     busbw = 0
@@ -133,11 +105,13 @@ def get_metric_strings(args, tput, busbw, duration):
 
 
 def sync_all():
+    dist = mcr_dl.get_distributed_engine()
     get_accelerator().synchronize()
     dist.barrier()
 
 
 def max_numel(comm_op, dtype, mem_factor, local_rank, args):
+    dist = mcr_dl.get_distributed_engine()
     dtype_size = _element_size(dtype)
     max_memory_per_gpu = get_accelerator().total_memory(local_rank) * mem_factor
     if comm_op == 'all_reduce' or comm_op == 'pt2pt' or comm_op == 'broadcast':

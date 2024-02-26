@@ -28,10 +28,8 @@ from mcr_dl.cuda_accelerator import get_accelerator
 
 
 def timed_all_reduce(input, start_event, end_event, args):
-    if args.dist == 'torch':
-        import torch.distributed as dist
-    elif args.dist == 'mcr_dl':
-        import mcr_dl as dist
+    import mcr_dl
+    dist = mcr_dl.get_distributed_engine()
 
     sync_all()
     # Warmups, establish connections, etc.
@@ -62,10 +60,12 @@ def timed_all_reduce(input, start_event, end_event, args):
 
 
 def run_all_reduce(local_rank, args):
-    if args.dist == 'torch':
-        import torch.distributed as dist
-    elif args.dist == 'mcr_dl':
-        import mcr_dl as dist
+    # if args.dist == 'torch':
+    #     import torch.distributed as dist
+    # elif args.dist == 'mcr_dl':
+    #     import mcr_dl as dist
+    import mcr_dl
+    dist = mcr_dl.get_distributed_engine()
 
     # Prepare benchmark header
     print_header(args, 'all_reduce')
@@ -125,7 +125,8 @@ def run_all_reduce(local_rank, args):
 
 
 if __name__ == "__main__":
+    import mcr_dl
     args = benchmark_parser().parse_args()
     rank = args.local_rank
-    init_processes(local_rank=rank, args=args)
+    mcr_dl.init_processes(args.dist, args.backend)
     run_all_reduce(local_rank=rank, args=args)
