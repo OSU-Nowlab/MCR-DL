@@ -1,0 +1,11 @@
+url_path,views_total,views_unique
+/OSU-Nowlab/MCR-DL,27,8
+/OSU-Nowlab/MCR-DL/blob/simplify-mcr-dl-access/mcr_dl/__init__.py,22,3
+/OSU-Nowlab/MCR-DL/tree/main/mcr_dl,18,3
+/OSU-Nowlab/MCR-DL/tree/main/benchmarks,17,2
+/OSU-Nowlab/MCR-DL/tree/simplify-mcr-dl-access/mcr_dl,12,2
+/OSU-Nowlab/MCR-DL/blob/main/benchmarks/all_reduce.py,11,1
+/OSU-Nowlab/MCR-DL/tree/simplify-mcr-dl-access/mcr_dl/utils,9,3
+/OSU-Nowlab/MCR-DL/tree/main/requirements,9,2
+/OSU-Nowlab/MCR-DL/pull/17,8,1
+/OSU-Nowlab/MCR-DL/tree/main,6,2
