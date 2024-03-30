@@ -72,12 +72,13 @@ class MPIBackend(Backend):
         pass
 
     def new_group(self, ranks):
-        # TODO: Change this to use comm_op.new_group when the impl. is ready.
+        # TODO: Change this to use self.mpi_comm_op.new_group(ranks) when the impl. is ready.
         if not torch.distributed.is_initialized():
             from mcr_dl.torch import TorchBackend
-            d = TorchBackend(rank=self.rank, size=self.size)
+            d = TorchBackend(rank=self.rank, world_size=self.size)
         logger.info(f"new group called with {ranks}")
         return torch.distributed.new_group(ranks)
+        # return self.mpi_comm_op.new_group(ranks)
 
     def get_rank(self, group=None):
         return self.mpi_comm_op.get_rank(0)

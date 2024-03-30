@@ -60,10 +60,6 @@ def timed_all_reduce(input, start_event, end_event, args):
 
 
 def run_all_reduce(local_rank, args):
-    # if args.dist == 'torch':
-    #     import torch.distributed as dist
-    # elif args.dist == 'mcr_dl':
-    #     import mcr_dl as dist
     import mcr_dl
     dist = mcr_dl.get_distributed_engine()
 

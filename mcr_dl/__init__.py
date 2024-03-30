@@ -22,15 +22,19 @@ from .comm import *
 global __dist_engine
 global __dist_backend
 
+__dist_engine = None
+__dist_backend = None
+
 def init_torch_distributed(backend):
     import torch.distributed as dist
     if backend == 'nccl':
         mpi_discovery()
     elif backend == 'mpi':
         set_mpi_dist_environemnt()
-    dist.init_process_group(backend)
+    dist.init_process_group(backend=backend)
     local_rank = int(os.environ['LOCAL_RANK'])
-    get_accelerator().set_device(local_rank)
+    # get_accelerator().set_device(local_rank)
+    print(f'Rank : {dist.get_rank()}  World_Size : {dist.get_world_size()}', flush = True)
 
 def init_mcr_dl_comm(backend):
     import mcr_dl
@@ -38,14 +42,13 @@ def init_mcr_dl_comm(backend):
     local_rank = int(os.environ['LOCAL_RANK'])
     #get_accelerator().set_device(local_rank)
 
-def init_processes(dist_engine, dist_backend):
+def init_processes(dist_engine, dist_backend, world_size = -1, rank = -1, timeout = None, init_method = None):
     print(f'Comm : {dist_engine}  Backend : {dist_backend}')
 
     global __dist_engine
     global __dist_backend
     __dist_engine = dist_engine
     __dist_backend = dist_backend
-
     if dist_engine == 'mcr_dl':
         init_mcr_dl_comm(dist_backend)
     elif dist_engine == 'torch':
@@ -56,8 +59,12 @@ def init_processes(dist_engine, dist_backend):
 
 def get_distributed_engine():
     global __dist_engine
+    if  __dist_engine is None:
+        return None
     if __dist_engine == 'torch':
         return torch.distributed
     elif __dist_engine == 'mcr_dl':
         import mcr_dl
         return mcr_dl
+    print(f"Unsupported values for __dist_engine. Expected values 'torch' or 'mcr_dl'")
+    exit(0)

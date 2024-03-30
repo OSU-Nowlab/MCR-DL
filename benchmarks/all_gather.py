@@ -95,7 +95,6 @@ def run_all_gather(local_rank, args):
                 # Delete original mat to avoid OOM
                 del mat
                 get_accelerator().empty_cache()
-                print(f"#######All gather world size : {world_size}")
                 output = torch.zeros(input.nelement() * world_size,
                                      dtype=getattr(torch, args.dtype)).to(get_accelerator().device_name(local_rank))
             except RuntimeError as e:
