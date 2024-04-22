@@ -23,6 +23,7 @@ from mcr_dl import utils
 from .utils import *
 from .backend import *
 from .comm import *
+from .constants import default_pg_timeout
 
 DS_COMM_ALL_GATHER_OFF = False
 DS_COMM_REDUCE_SCATTER_OFF = False
@@ -119,7 +120,7 @@ class TorchBackend(Backend):
         needed.
     """
 
-    def __init__(self, backend, timeout, init_method, rank=-1, world_size=-1, name='torch'):
+    def __init__(self, backend="mpi", init_method = None, timeout = default_pg_timeout, rank=-1, world_size=-1, name='torch'):
         super(TorchBackend, self).__init__()
         self.has_all_reduce_coalesced = has_all_reduce_coalesced()
         self.has_coalescing_manager = has_coalescing_manager()
@@ -131,7 +132,7 @@ class TorchBackend(Backend):
         # The idea is to fake that dist backend is initialized even when
         # it is not so we can run on a single GPU without doing any init_process_group
         self.single_gpu_mode = True
-        self.init_process_group(backend, timeout, init_method, rank, world_size)
+        self.init_process_group(backend=backend, init_method=init_method, timeout= timeout, rank=rank, world_size= world_size)
 
     @classmethod
     def get_all_gather_function(self):

@@ -33,7 +33,7 @@ from constants import *
 # For importing
 def main(args, rank):
 
-    init_processes(local_rank=rank, args=args)
+    mcr_dl.init_processes(args.dist, args.backend)
 
     ops_to_run = []
     if args.all_reduce:
